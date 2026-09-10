@@ -1,0 +1,6 @@
+export type ProcessResult = { exit_code: number; duration_ms: number; timed_out: boolean };
+export type Diagnosis = { status: 'diagnosed' | 'insufficient_evidence'; first_consequential_event_id: string | null; failure_mode: string; explanation: string; evidence: string[]; suggested_intervention: string; confidence: number };
+export type Run = { id: string; created_at: string; source_repo: string; task: string; test_command: string; status: string; baseline: ProcessResult | null; agent: ProcessResult | null; final_test: ProcessResult | null; duration_ms: number | null; action_count: number; files_changed: string[]; final_diff: string; diagnosis: Diagnosis | null; diagnosis_error: string | null; error: string | null; parent_run_id: string | null; intervention: string | null; snapshot_digest: string | null; codex_version: string | null; recorded: boolean };
+export type AgentEvent = { id: string; sequence: number; timestamp: string; event_type: string; title: string; summary: string; raw_event: Record<string, unknown>; action_id: string | null };
+export type Detail = { run: Run; events: AgentEvent[]; logs: Record<string, string>; recoveries: Run[]; artifacts: string[] };
+export const terminal = new Set(['baseline_failed', 'failed', 'succeeded', 'error', 'cancelled']);
