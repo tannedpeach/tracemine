@@ -12,6 +12,10 @@ repo + task → Codex trajectory → failing tests → likely earlier mistake
 
 > Build status: the complete workflow is implemented and being validated. A genuine failed-run/recovery recording is still required before calling this portfolio-ready. No synthetic trajectory is presented as a real experiment.
 
+![Recorded real run: trajectory, tests, diff and audit trail](docs/media/recorded-run.gif)
+
+This 18-second walkthrough inspects a **real passing run**. It is a sequence of UI captures, not a live execution or a failure/recovery demonstration.
+
 ## Why this problem
 
 The last failing command often isn't the most informative part of a coding-agent run. The useful question is which earlier decision put the agent on the wrong path, and whether a small intervention changes the outcome.
@@ -23,12 +27,22 @@ This project extends my experience building LLM evaluation and failure-mining in
 Prerequisites: **Python 3.11+, Node 20+, Git, and macOS** (or Linux with `bubblewrap` installed and user namespaces enabled). Windows is not supported. Dependencies are pinned in `requirements.lock` and `frontend/package-lock.json`.
 
 ```bash
-# From your clone of this repository:
+git clone https://github.com/tannedpeach/tracemine.git
+cd tracemine
 ./scripts/setup.sh
 ./scripts/dev.sh
 ```
 
 Open **http://127.0.0.1:8000**. The same local server serves the React UI and API.
+
+Setup imports a checksummed real Codex recording. Click **task-cache** in run history to inspect its trajectory, tests, diff, and redacted logs without authentication or model calls. Reproduce its patch and test outcome independently:
+
+```bash
+source .venv/bin/activate
+python scripts/reproduce.py 11ab0728156444b08799fe59b7e85d8f
+```
+
+This applies the recorded patch in a disposable copy and reruns baseline and final tests. It does not rerun the model.
 
 For live experiments, install and authenticate the [Codex CLI](https://developers.openai.com/codex/cli). Verify `codex --version`, `codex login status`, and `codex exec --help`. TraceMine uses the installed CLI's account; live runs and diagnosis consume that account's model usage. The integration has been exercised with `codex-cli 0.153.4` and requires `--json`, `--ephemeral`, and `--ignore-user-config`.
 

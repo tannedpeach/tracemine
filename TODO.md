@@ -11,15 +11,21 @@
 - [x] API and React form, saved runs, trajectory inspection.
 - [x] Conservative structured diagnosis with validated event references (real failing-run validation pending).
 - [x] Clean-baseline recovery and measured comparison (integration-tested; live validation pending).
-- [x] Error handling, process timeouts, isolation and lifecycle tests (25 passing; Python type checks pass).
-- [x] Real reproducible demo evidence and polished UI (three real passing runs; one redacted recording is reproducible).
-- [x] README, setup/check scripts, CI, and visual UI review; short recording and full fresh-clone validation remain outstanding.
-- [ ] Cursor submission review; honest outstanding gaps documented in docs/submission-review.md.
+- [x] Error handling, process timeouts, isolation and lifecycle tests (32 passing; Python type checks pass).
+- [x] Real reproducible evidence and polished UI (five completed live tasks passed; one redacted recording is reproducible).
+- [x] README, setup/check scripts, CI configuration, desktop and narrow-window UI review.
+- [x] Fresh-clone installation, complete checks and recorded patch reproduction.
+- [x] Short GIF of real passing-run inspection, explicitly labeled as partial workflow coverage.
+- [x] Public Git history scan for machine paths and common credential patterns.
+- [ ] Verify hosted GitHub CI after publication.
+- [ ] Genuine failing Codex run, grounded diagnosis and targeted retry with measured comparison.
+- [ ] Recording of the complete failure → diagnosis → retry → comparison story.
+- [ ] Full 13-step Definition of Done from a fresh checkout and final Cursor submission approval.
 
 No stretch goals before the definition of done. All real logs remain in ignored local storage; only explicitly reviewed, sanitized evidence belongs in Git.
 
 Section 33 verified with codex-cli 0.153.4: 13 real JSONL records, exit 0, isolated edit and compilation. Source file unchanged. Raw evidence retained outside Git.
 
-Backend milestone: 16 tests passing; real caching task passed (7 actions, 2 files). Do not present that success as a failure or a recovery. API, React UI, conservative diagnosis and recovery are implemented. Need real failing evidence, visual review, and packaging.
+The real caching task passed (7 actions, 2 files). Do not present that success as a failure or a recovery. API, React UI, diagnosis and recovery are implemented; live failure/recovery evidence remains outstanding.
 
-Validation update: prepared-environment verifier added after observing login-shell PATH resets; independent Git diff, storage ownership lock, snapshot integrity checks, and pytest temp handling tested. Original cache patch exported with redaction/checksums and reproduced successfully. New SQLite/cache-coherence experiment in progress. README, setup scripts, CI, and submission review drafted; no completion claim.
+Publication audit: fresh clone setup and all checks passed; imported real recording inspected in the UI and its patch reproduced successfully. Fixed hidden history in narrow windows and added interrupted-agent outcome regression tests. See docs/submission-review.md for the eight-question review and remaining completion gate. No completion claim.
