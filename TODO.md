@@ -17,7 +17,7 @@
 - [x] Fresh-clone installation, complete checks and recorded patch reproduction.
 - [x] Short GIF of real passing-run inspection, explicitly labeled as partial workflow coverage.
 - [x] Public Git history scan for machine paths and common credential patterns.
-- [ ] Verify hosted GitHub CI after publication.
+- [x] Hosted GitHub CI passed on macOS with Python 3.11 and 3.13 after publication.
 - [ ] Genuine failing Codex run, grounded diagnosis and targeted retry with measured comparison.
 - [ ] Recording of the complete failure → diagnosis → retry → comparison story.
 - [ ] Full 13-step Definition of Done from a fresh checkout and final Cursor submission approval.

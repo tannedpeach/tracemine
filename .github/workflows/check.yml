@@ -20,3 +20,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: ./scripts/setup.sh
       - run: ./scripts/check.sh
+      - name: Reproduce the recorded patch outcome without model calls
+        run: |
+          source .venv/bin/activate
+          python scripts/reproduce.py 11ab0728156444b08799fe59b7e85d8f

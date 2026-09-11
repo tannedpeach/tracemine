@@ -4,7 +4,7 @@ Publication audit: September 11, 2026. The MVP code path is implemented, but sub
 
 - [x] First README screen explains the instrument: inspect an earlier mistake, test a targeted hint.
 - [x] Why the problem matters is specific to coding-agent evaluation and grounded in the author's failure-mining experience.
-- [x] Fresh clone on macOS / Python 3.13: setup, all checks, imported recording, server and browser inspection passed. Python 3.11 is in the hosted CI matrix, pending verification.
+- [x] Fresh clone on macOS / Python 3.13: setup, all checks, imported recording, server and browser inspection passed. Hosted GitHub CI also passed on Python 3.11 and 3.13 ([publication run](https://github.com/tannedpeach/tracemine/actions/runs/34652899278)).
 - [ ] Full core-story recording: the included 18-second GIF shows actual passing-run inspection, tests/diff and audit artifacts. It is a sequence of UI captures, not failure/recovery evidence.
 - [x] A small actual Python repository and real model run exist; no fabricated run evidence.
 - [x] Architecture, process boundaries, model uncertainty, and test-only success are explained.
