@@ -191,6 +191,34 @@ def test_recovery_prompt_does_not_replace_task():
     assert "not as a guaranteed" in text
 
 
+@pytest.mark.parametrize("tests_pass", [True, False])
+async def test_agent_error_preserves_final_test_evidence(source, tmp_path, tests_pass):
+    class InterruptedAgent(FakeAgent):
+        async def run(self, *args):
+            await super().run(*args)
+            return ProcessResult(exit_code=1, duration_ms=1)
+
+    store = Store(tmp_path / "data")
+    runner = Runner(store, InterruptedAgent(), FakeDiagnoser())
+    run = runner.create(
+        RunRequest(
+            repo=str(source),
+            task="change value",
+            test_command=(
+                "true"
+                if tests_pass
+                else f'{sys.executable} -c "from app import VALUE; assert VALUE == 1"'
+            ),
+        )
+    )
+    await runner.run(run)
+    assert "did not complete normally" in run.error
+    assert run.final_test.exit_code == (0 if tests_pass else 1)
+    assert run.status == ("error" if tests_pass else "failed")
+    assert (run.diagnosis is None) == tests_pass
+    assert store.get(run.id).error == run.error
+
+
 async def test_cancellation_is_persisted(source, tmp_path):
     class SlowAgent(FakeAgent):
         async def run(self, *args):

@@ -1086,10 +1086,22 @@ tbody tr + tr td {
   }
   .workspace,
   .history-heading,
-  .sidebar nav,
   .sidebar-empty,
   .sidebar-footer {
     display: none;
+  }
+  .sidebar nav {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    max-height: 120px;
+  }
+  .sidebar nav:empty {
+    display: none;
+  }
+  .history {
+    flex: 0 0 240px;
+    margin-bottom: 0;
   }
   .new-run {
     position: absolute;
