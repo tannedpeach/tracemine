@@ -185,8 +185,11 @@ class Runner:
             )
         if run.final_test.timed_out:
             raise RuntimeError("Final tests timed out; no pass/fail conclusion")
+        if run.error:
+            self.state(run, "error")
+            return
         if run.final_test.exit_code == 0:
-            self.state(run, "error" if run.error else "succeeded")
+            self.state(run, "succeeded")
             return
         self.state(run, "diagnosing")
         try:

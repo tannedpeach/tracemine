@@ -214,8 +214,8 @@ async def test_agent_error_preserves_final_test_evidence(source, tmp_path, tests
     await runner.run(run)
     assert "did not complete normally" in run.error
     assert run.final_test.exit_code == (0 if tests_pass else 1)
-    assert run.status == ("error" if tests_pass else "failed")
-    assert (run.diagnosis is None) == tests_pass
+    assert run.status == "error"
+    assert run.diagnosis is None
     assert store.get(run.id).error == run.error
 
 

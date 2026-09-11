@@ -35,6 +35,12 @@ Timeout, exception, and cancellation paths kill the process group, including chi
 
 A separate Codex invocation uses read-only mode and a JSON output schema. The prompt includes the task, ordered events, diff, and final stdout/stderr. Embedded repository instructions are treated as data. The model is asked not to use tools. Logs preserve both the exact submitted diagnosis context and the model stream.
 
+Codex is both the coding agent and the separate diagnoser. This is not an unbiased
+judge: event references and schema validation constrain the output, but human
+review and measured recovery are still required. A future evaluation would compare
+diagnoses with human labels or cross-model judges. Abnormally terminated agent
+processes retain final verification evidence but do not trigger diagnosis.
+
 Pydantic validates the response and requires a known event ID for a diagnosed result. Insufficient evidence must select no event. Invalid output becomes a visible diagnosis error without losing the failing-test outcome. The model's evidence statements still need human review; schema validation cannot establish causality.
 
 The context includes up to 200 events with bounded fields, 40,000 diff characters and 24,000 bytes per test stream. Larger contexts are rejected or explicitly marked truncated. This trades full automatic analysis of enormous traces for a small, understandable MVP with complete raw evidence available manually.

@@ -7,6 +7,8 @@
 - [x] Prove real JSONL capture on a disposable Git repository.
 
 ## Implementation order
+- [x] Finalization: fixed three-candidate suite and resumable bounded harness; no model overrides or repeated prompts.
+- [ ] Run the fixed suite once, record every outcome and manually review any candidate failure.
 - [x] Repository snapshot, baseline tests, adapter, persistence, final tests/diff.
 - [x] API and React form, saved runs, trajectory inspection.
 - [x] Conservative structured diagnosis with validated event references (real failing-run validation pending).
