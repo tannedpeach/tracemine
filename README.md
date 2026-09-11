@@ -117,3 +117,9 @@ Local data lives in `.tracemine/` (ignored by Git), or `TRACEMINE_DATA`. It incl
 `./scripts/check.sh` runs backend lint/format checks, Python type checking, isolation/lifecycle/API tests, frontend formatting, strict TypeScript compilation, and the production build. Test doubles are explicitly labeled and never exported as real run evidence. CI runs the same checks on macOS.
 
 See [experiment ledger](docs/experiments.md) for actual live results and [submission review](docs/submission-review.md) for the final portfolio audit.
+
+The [fixed candidate suite](examples/candidate-suite.md) evaluates three realistic
+tasks once each, records every result, and stops for manual review at the first
+candidate coding failure. It uses the real runner without model overrides or
+prompt mutation. Existing baseline tests must pass; agents add tests for the new
+requirements, so this is not an independent benchmark of requirement coverage.
