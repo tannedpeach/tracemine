@@ -9,11 +9,12 @@
 ## Implementation order
 - [x] Finalization: fixed three-candidate suite and resumable bounded harness; no model overrides or repeated prompts.
 - [ ] Run the fixed suite once, record every outcome and manually review any candidate failure.
+- [x] Run fixed suite v1 once: two successes; third stopped on an explicit Codex usage-limit process error. No genuine coding failure appeared.
 - [x] Repository snapshot, baseline tests, adapter, persistence, final tests/diff.
 - [x] API and React form, saved runs, trajectory inspection.
 - [x] Conservative structured diagnosis with validated event references (real failing-run validation pending).
 - [x] Clean-baseline recovery and measured comparison (integration-tested; live validation pending).
-- [x] Error handling, process timeouts, isolation and lifecycle tests (32 passing; Python type checks pass).
+- [x] Error handling, process timeouts, isolation and lifecycle tests (37 passing, including candidate baselines; Python type checks pass).
 - [x] Real reproducible evidence and polished UI (five completed live tasks passed; one redacted recording is reproducible).
 - [x] README, setup/check scripts, CI configuration, desktop and narrow-window UI review.
 - [x] Fresh-clone installation, complete checks and recorded patch reproduction.
