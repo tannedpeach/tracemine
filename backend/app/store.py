@@ -1,7 +1,9 @@
 """SQLite owns metadata; the filesystem owns immutable inputs and raw process logs."""
 
+import fcntl
 import json
 import sqlite3
+from contextlib import contextmanager
 from pathlib import Path
 
 from .models import TERMINAL, Event, Run
@@ -20,6 +22,19 @@ class Store:
                     run_id TEXT NOT NULL, sequence INTEGER NOT NULL, data TEXT NOT NULL,
                     PRIMARY KEY (run_id, sequence), FOREIGN KEY(run_id) REFERENCES runs(id));
             """)
+
+    @contextmanager
+    def claim(self):
+        """Only one server or CLI process can own a run database at a time."""
+        with (self.root / "owner.lock").open("a") as lock:
+            try:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as exc:
+                raise RuntimeError("This data directory is already in use by TraceMine") from exc
+            try:
+                yield
+            finally:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
     def connect(self) -> sqlite3.Connection:
         db = sqlite3.connect(self.database, timeout=10)

@@ -1,15 +1,15 @@
 """The MVP state machine. A retry always branches from the retained input snapshot."""
 
 import asyncio
-import shutil
+import shlex
 import time
 import uuid
 from pathlib import Path
 
 from .adapter import CodexAdapter, CodingAgentAdapter
 from .diagnosis import Diagnoser, recovery_prompt
-from .models import Event, Run, RunRequest
-from .process import execute
+from .models import Event, Run, RunRequest, Status
+from .process import clean_env, execute
 from .repository import capture_diff, git, run_tests, snapshot, validate_source, working_copy
 from .store import Store
 
@@ -62,7 +62,7 @@ class Runner:
         self.store.save(run)
         return run
 
-    def state(self, run: Run, status: str) -> None:
+    def state(self, run: Run, status: Status) -> None:
         run.status = status
         self.store.save(run)
 
@@ -92,7 +92,9 @@ class Runner:
         if not run.parent_run_id:
             source = validate_source(Path(run.source_repo), self.store.root)
             try:
-                run.source_commit = await asyncio.to_thread(git, source, "rev-parse", "HEAD")
+                run.source_commit = (
+                    await asyncio.to_thread(git, source, "rev-parse", "HEAD")
+                ).strip()
             except ValueError:
                 run.source_commit = None
             run.snapshot_digest = await asyncio.to_thread(snapshot, source, saved)
@@ -102,7 +104,9 @@ class Runner:
         self.state(run, "baseline_testing")
         # Baseline tests may themselves mutate files: use a separate disposable copy.
         baseline_repo = directory / "baseline"
-        await asyncio.to_thread(shutil.copytree, saved, baseline_repo)
+        baseline_digest = await asyncio.to_thread(snapshot, saved, baseline_repo)
+        if baseline_digest != run.snapshot_digest:
+            raise ValueError("Retained input snapshot changed; refusing a non-comparable run")
         run.baseline = await run_tests(
             baseline_repo, run.test_command, logs, "baseline", self.test_timeout
         )
@@ -132,16 +136,39 @@ class Runner:
                 self.store.save(run)
 
         prompt = recovery_prompt(run.task, run.intervention)
+        # Login profiles may reset PATH. Give Codex the same prepared environment
+        # that passed the baseline, without asking it to reinstall dependencies.
+        scratch = repo / ".tracemine-tmp"
+        scratch.mkdir(exist_ok=True)
+        verifier = scratch / "verify"
+        verifier.write_text(
+            "#!/bin/sh\nset -eu\n"
+            + "export PATH="
+            + shlex.quote(clean_env()["PATH"])
+            + "\n"
+            + 'export TMPDIR="$PWD/.tracemine-tmp"\n'
+            + "exec /bin/sh -c "
+            + shlex.quote(run.test_command)
+            + "\n"
+        )
+        prompt += (
+            "\n\nTRACEMINE VERIFICATION ENVIRONMENT\n"
+            "The baseline passed. Run `/bin/sh .tracemine-tmp/verify` to execute "
+            "the supplied test command in the prepared Python environment. "
+            "Login shells can reset PATH; the verifier restores the same PATH "
+            "used for the baseline. Dependencies are already installed. "
+            "The .tracemine-tmp directory is generated run infrastructure.\n"
+        )
         (logs / "agent.prompt.txt").write_text(prompt)
         run.agent = await self.adapter.run(repo, prompt, logs, on_event)
         run.final_diff, run.files_changed = await asyncio.to_thread(
-            capture_diff, repo, run.original_commit
+            capture_diff, saved, repo, directory / "diff-repo"
         )
         (logs / "final.diff").write_text(run.final_diff)
         self.state(run, "testing")
         # Final verification also uses a separate copy, preserving the exact agent output.
         final_repo = directory / "verification"
-        await asyncio.to_thread(snapshot, repo, final_repo)
+        await asyncio.to_thread(snapshot, repo, final_repo, False)
         run.final_test = await run_tests(
             final_repo, run.test_command, logs, "final", self.test_timeout
         )

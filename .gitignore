@@ -6,8 +6,10 @@ __pycache__/
 node_modules/
 dist/
 .tracemine/
+.tracemine*/
 .env*
 .DS_Store
 *.egg-info/
 *.tsbuildinfo
 .tracemine*.log
+.mypy_cache/

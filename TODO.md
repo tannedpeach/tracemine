@@ -11,7 +11,7 @@
 - [x] API and React form, saved runs, trajectory inspection.
 - [x] Conservative structured diagnosis with validated event references (real failing-run validation pending).
 - [x] Clean-baseline recovery and measured comparison (integration-tested; live validation pending).
-- [ ] Error handling, process timeouts, isolation and lifecycle tests.
+- [x] Error handling, process timeouts, isolation and lifecycle tests (25 passing; Python type checks pass).
 - [ ] Real reproducible demo evidence and polished UI.
 - [ ] README, short demo recording, fresh-clone validation.
 - [ ] Cursor submission review; address all eight review questions.
@@ -21,3 +21,5 @@ No stretch goals before the definition of done. All real logs remain in ignored 
 Section 33 verified with codex-cli 0.153.4: 13 real JSONL records, exit 0, isolated edit and compilation. Source file unchanged. Raw evidence retained outside Git.
 
 Backend milestone: 16 tests passing; real caching task passed (7 actions, 2 files). Do not present that success as a failure or a recovery. API, React UI, conservative diagnosis and recovery are implemented. Need real failing evidence, visual review, and packaging.
+
+Validation update: prepared-environment verifier added after observing login-shell PATH resets; independent Git diff, storage ownership lock, snapshot integrity checks, and pytest temp handling tested. Original cache patch exported with redaction/checksums and reproduced successfully. New SQLite/cache-coherence experiment in progress. README, setup scripts, CI, and submission review drafted; no completion claim.

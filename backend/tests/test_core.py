@@ -27,10 +27,10 @@ def test_snapshot_independent_of_source_and_git_metadata(source, tmp_path):
     (source / ".env").write_text("TOKEN=not-a-real-token")
     saved = tmp_path / "snapshot"
     digest = snapshot(source, saved)
-    base = working_copy(saved, tmp_path / "working")
+    working_copy(saved, tmp_path / "working")
     (tmp_path / "working" / "app.py").write_text("VALUE = 2\n")
     (tmp_path / "working" / "new.py").write_text("NEW = True\n")
-    diff, names = capture_diff(tmp_path / "working", base)
+    diff, names = capture_diff(saved, tmp_path / "working", tmp_path / "diff")
     assert "app.py" in names and "new.py" in names
     assert "+VALUE = 2" in diff
     assert (source / "app.py").read_text() == "VALUE = 1\n"
@@ -208,3 +208,102 @@ async def test_cancellation_is_persisted(source, tmp_path):
     with pytest.raises(asyncio.CancelledError):
         await task
     assert store.get(run.id).status == "cancelled"
+
+
+def test_single_storage_owner(tmp_path):
+    first = Store(tmp_path / "data")
+    second = Store(tmp_path / "data")
+    with first.claim():
+        with pytest.raises(RuntimeError, match="already in use"):
+            with second.claim():
+                pass
+    with second.claim():
+        pass
+
+
+def test_diff_ignores_agent_git_configuration(source, tmp_path):
+    saved = tmp_path / "saved"
+    snapshot(source, saved)
+    repo = tmp_path / "working"
+    working_copy(saved, repo)
+    # A corrupted or hostile agent .git must not participate in diff capture.
+    import shutil
+
+    shutil.rmtree(repo / ".git")
+    (repo / ".git").write_text("gitdir: /untrusted")
+    (repo / "app.py").unlink()
+    diff, files = capture_diff(saved, repo, tmp_path / "diff")
+    assert files == ["app.py"] and "-VALUE = 1" in diff
+
+
+async def test_large_line_and_invalid_utf8_remain_byte_exact(tmp_path):
+    lines = []
+
+    async def receive(line):
+        lines.append(line)
+
+    result = await execute(
+        [sys.executable, "-c", "import sys; sys.stdout.buffer.write(b'x'*100000+b'\\n\\xff')"],
+        tmp_path,
+        tmp_path / "logs",
+        "agent",
+        10,
+        on_line=receive,
+    )
+    assert result.exit_code == 0
+    assert lines == [b"x" * 100000, b"\xff"]
+    assert (tmp_path / "logs/agent.stdout").read_bytes() == b"x" * 100000 + b"\n\xff"
+
+
+async def test_diagnosis_failure_does_not_erase_test_failure(source, tmp_path):
+    class BrokenDiagnoser:
+        async def diagnose(self, *args):
+            raise ValueError("Model output did not match schema")
+
+    store = Store(tmp_path / "data")
+    runner = Runner(store, FakeAgent(), BrokenDiagnoser())
+    run = runner.create(
+        RunRequest(
+            repo=str(source),
+            task="change",
+            test_command=f'{sys.executable} -c "from app import VALUE; assert VALUE == 1"',
+        )
+    )
+    await runner.run(run)
+    assert run.status == "failed" and run.final_test.exit_code == 1
+    assert "schema" in run.diagnosis_error and run.diagnosis is None
+
+
+async def test_baseline_mutation_does_not_leak_into_agent_input(source, tmp_path):
+    store = Store(tmp_path / "data")
+    runner = Runner(store, FakeAgent(), FakeDiagnoser())
+    run = runner.create(
+        RunRequest(repo=str(source), task="change", test_command="printf 'VALUE = 999' > app.py")
+    )
+    await runner.run(run)
+    assert run.status == "succeeded"  # Exit code only; this command doesn't assert correctness.
+    assert (source / "app.py").read_text() == "VALUE = 1\n"
+
+
+async def test_tampered_snapshot_recovery_is_rejected(source, tmp_path):
+    store = Store(tmp_path / "data")
+    runner = Runner(store, FakeAgent(), FakeDiagnoser())
+    request = RunRequest(
+        repo=str(source),
+        task="change",
+        test_command=f'{sys.executable} -c "from app import VALUE; assert VALUE == 1"',
+    )
+    run = runner.create(request)
+    await runner.run(run)
+    assert run.status == "failed"
+    (store.root / "snapshots" / run.snapshot_id / "app.py").write_text("VALUE = 999\n")
+    retry = runner.create(request, run)
+    await runner.run(retry)
+    assert retry.status == "error" and "snapshot changed" in retry.error
+
+
+def test_git_resolution_preserves_python_environment(monkeypatch):
+    from app.process import clean_env
+
+    monkeypatch.setenv("PATH", "/example/venv/bin:/usr/local/bin:/usr/bin:/bin")
+    assert clean_env()["PATH"].split(":")[0] == "/example/venv/bin"

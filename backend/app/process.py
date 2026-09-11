@@ -2,9 +2,13 @@
 
 import asyncio
 import os
+import shutil
 import signal
+import subprocess
+import sys
 import time
 from collections.abc import Awaitable, Callable
+from functools import lru_cache
 from pathlib import Path
 
 from .models import ProcessResult
@@ -14,10 +18,29 @@ MAX_LINE = 2 * 1024 * 1024
 MAX_LOG = 64 * 1024 * 1024
 
 
+@lru_cache(maxsize=1)
+def git_binary_directory() -> str | None:
+    # Apple's /usr/bin/git launcher may try to write Xcode caches in a sandbox.
+    # Resolve the actual binary before launching restricted children.
+    if sys.platform == "darwin" and shutil.which("xcrun"):
+        resolved = subprocess.run(
+            ["xcrun", "--find", "git"], capture_output=True, text=True, timeout=10, check=False
+        )
+        if resolved.returncode == 0 and Path(resolved.stdout.strip()).is_file():
+            return str(Path(resolved.stdout.strip()).parent)
+    return None
+
+
 def clean_env() -> dict[str, str]:
     # Do not pass arbitrary application tokens to repository tests / agent commands.
     keys = ("PATH", "HOME", "LANG", "LC_ALL", "SYSTEMROOT", "CODEX_HOME")
-    return {key: os.environ[key] for key in keys if key in os.environ}
+    env = {key: os.environ[key] for key in keys if key in os.environ}
+    if directory := git_binary_directory():
+        entries = env.get("PATH", os.defpath).split(os.pathsep)
+        index = entries.index("/usr/bin") if "/usr/bin" in entries else len(entries)
+        entries.insert(index, directory)
+        env["PATH"] = os.pathsep.join(entries)
+    return env
 
 
 async def execute(
@@ -105,6 +128,7 @@ async def execute(
             if not job.done():
                 job.cancel()
         await asyncio.gather(*jobs, return_exceptions=True)
+    assert proc.returncode is not None
     result = ProcessResult(
         exit_code=proc.returncode,
         timed_out=timed_out,

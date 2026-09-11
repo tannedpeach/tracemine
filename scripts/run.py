@@ -19,7 +19,8 @@ async def main():
     runner = Runner(store)
     run = runner.create(RunRequest(repo=args.repo, task=args.task, test_command=args.test_command))
     print(f"Run {run.id}", flush=True)
-    await runner.run(run)
+    with store.claim():
+        await runner.run(run)
     print(run.model_dump_json(indent=2))
     return 0 if run.status == "succeeded" else 1
 

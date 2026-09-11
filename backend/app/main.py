@@ -48,12 +48,13 @@ def create_app(data_dir: Path | None = None, runner_override: Runner | None = No
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        store.interrupt_pending()
-        yield
-        pending = list(tasks.values())
-        for task in pending:
-            task.cancel()
-        await asyncio.gather(*pending, return_exceptions=True)
+        with store.claim():
+            store.interrupt_pending()
+            yield
+            pending = list(tasks.values())
+            for task in pending:
+                task.cancel()
+            await asyncio.gather(*pending, return_exceptions=True)
 
     app = FastAPI(title="TraceMine", version="0.1.0", lifespan=lifespan)
     app.add_middleware(

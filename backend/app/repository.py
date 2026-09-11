@@ -23,6 +23,7 @@ EXCLUDED = {
     ".ruff_cache",
     ".tracemine",
     ".DS_Store",
+    ".tracemine-tmp",
 }
 MAX_BYTES = 100 * 1024 * 1024
 
@@ -43,7 +44,7 @@ def git(repo: Path, *args: str) -> str:
     )
     if result.returncode:
         raise ValueError(f"Git failed: {result.stderr.strip()[:2000]}")
-    return result.stdout.strip()
+    return result.stdout
 
 
 def validate_source(source: Path, storage: Path) -> Path:
@@ -55,14 +56,16 @@ def validate_source(source: Path, storage: Path) -> Path:
     return source
 
 
-def snapshot(source: Path, target: Path) -> str:
+def snapshot(source: Path, target: Path, require_python: bool = True) -> str:
     """Reject symlinks/special files; never copy Git hooks, config, or external worktree links."""
     target.mkdir(parents=True)
     digest = hashlib.sha256()
     total = 0
     try:
         for directory, folders, files in os.walk(source, followlinks=False):
-            folders[:] = sorted(n for n in folders if n not in EXCLUDED)
+            folders[:] = sorted(
+                n for n in folders if n not in EXCLUDED and not n.startswith("pytest-of-")
+            )
             for name in folders + sorted(files):
                 item = Path(directory) / name
                 relative = item.relative_to(source)
@@ -86,7 +89,7 @@ def snapshot(source: Path, target: Path) -> str:
                     digest.update(
                         str(relative).encode()
                         + b"\0"
-                        + str(mode & 0o111).encode()
+                        + str(0o111 if mode & stat.S_IXUSR else 0).encode()
                         + b"\0"
                         + data
                         + b"\0"
@@ -96,7 +99,7 @@ def snapshot(source: Path, target: Path) -> str:
     except BaseException:
         shutil.rmtree(target)
         raise
-    if not any(target.rglob("*.py")):
+    if require_python and not any(target.rglob("*.py")):
         shutil.rmtree(target)
         raise ValueError("MVP supports Python repositories; no .py files found")
     return digest.hexdigest()
@@ -104,7 +107,7 @@ def snapshot(source: Path, target: Path) -> str:
 
 def working_copy(saved: Path, target: Path) -> str:
     shutil.copytree(saved, target)
-    git(target, "init", "-q")
+    git(target, "init", "-q", "--template=")
     git(target, "add", "-f", ".")
     git(
         target,
@@ -119,15 +122,25 @@ def working_copy(saved: Path, target: Path) -> str:
         "TraceMine input snapshot",
         "--allow-empty",
     )
-    return git(target, "rev-parse", "HEAD")
+    return git(target, "rev-parse", "HEAD").strip()
 
 
-def capture_diff(repo: Path, base: str) -> tuple[str, list[str]]:
-    # Include new files without staging their contents; compare against the retained
-    # commit, even if the agent made its own commits. Ignore generated files as Git does.
-    git(repo, "add", "-N", ".")
-    diff = git(repo, "diff", "--no-ext-diff", "--no-textconv", "--binary", base, "--")
-    names = git(repo, "diff", "--name-only", "-z", base, "--")
+def capture_diff(saved: Path, repo: Path, target: Path) -> tuple[str, list[str]]:
+    # Agent-controlled Git configuration can define executable filters/hooks.
+    # Compute the diff in fresh metadata outside the agent's writable directory.
+    base = working_copy(saved, target)
+    for item in target.iterdir():
+        if item.name != ".git":
+            if item.is_dir():
+                shutil.rmtree(item)
+            else:
+                item.unlink()
+    clean = target.parent / "diff-content"
+    snapshot(repo, clean, require_python=False)
+    shutil.copytree(clean, target, dirs_exist_ok=True)
+    git(target, "add", "-N", ".")
+    diff = git(target, "diff", "--no-ext-diff", "--no-textconv", "--binary", base, "--")
+    names = git(target, "diff", "--name-only", "-z", base, "--")
     return diff, [name for name in names.split("\0") if name]
 
 

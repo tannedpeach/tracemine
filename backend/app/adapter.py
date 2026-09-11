@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Protocol
 
 from .models import Event, ProcessResult
-from .process import execute
+from .process import clean_env, execute
 
 
 def normalize(line: bytes, sequence: int) -> Event:
@@ -77,6 +77,9 @@ class CodexAdapter:
             sequence += 1
             await on_event(normalize(line, sequence))
 
+        scratch = working_directory / ".tracemine-tmp"
+        scratch.mkdir(exist_ok=True)
+        env = clean_env() | {"TMPDIR": str(scratch), "TMP": str(scratch), "TEMP": str(scratch)}
         return await execute(
             [
                 "codex",
@@ -100,4 +103,5 @@ class CodexAdapter:
             self.timeout,
             on_line=receive,
             stdin=task,
+            env=env,
         )
