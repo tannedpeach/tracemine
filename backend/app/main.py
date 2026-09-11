@@ -158,11 +158,17 @@ def create_app(data_dir: Path | None = None, runner_override: Runner | None = No
 
     @app.post("/api/runs/{run_id}/cancel", status_code=202)
     async def cancel(run_id: str):
-        required(run_id)
+        run = required(run_id)
         task = tasks.get(run_id)
         if task is None:
             raise HTTPException(409, "Run is no longer active")
         task.cancel()
+        if run.status == "created":
+            # A task cancelled before its first coroutine step never enters finally.
+            run.status = "cancelled"
+            run.error = "Queued run cancelled before execution."
+            store.save(run)
+            store.export_metadata(run)
         return {"status": "cancellation_requested"}
 
     @app.get("/api/runs/{run_id}/artifacts/{name}")

@@ -21,7 +21,7 @@ def normalize(line: bytes, sequence: int) -> Event:
         raw = {"type": "unparseable", "line": text}
     item = raw.get("item")
     item = item if isinstance(item, dict) else {}
-    kind = item.get("type", raw.get("type", "unknown"))
+    kind = str(item.get("type", raw.get("type", "unknown")))
     category = {
         "command_execution": "command",
         "file_change": "file_change",
@@ -34,7 +34,10 @@ def normalize(line: bytes, sequence: int) -> Event:
         category = "error"
     title = item.get("command") or item.get("text") or raw.get("message") or kind
     if kind == "file_change":
-        title = "Edit " + ", ".join(str(c.get("path", "?")) for c in item.get("changes", []))
+        changes = item.get("changes", [])
+        if not isinstance(changes, list):
+            changes = []
+        title = "Edit " + ", ".join(str(c.get("path", "?")) for c in changes if isinstance(c, dict))
     return Event(
         id=f"e{sequence:05d}",
         sequence=sequence,
@@ -43,7 +46,7 @@ def normalize(line: bytes, sequence: int) -> Event:
         title=str(title)[:500],
         summary=str(item.get("aggregated_output", ""))[:12000],
         raw_event=raw,
-        action_id=item.get("id"),
+        action_id=item.get("id") if isinstance(item.get("id"), str) else None,
     )
 
 

@@ -94,3 +94,4 @@ class Run(BaseModel):
     intervention: str | None = None
     codex_version: str | None = None
     recorded: bool = False
+    agent_backend: Literal["codex", "test-double"] = "codex"

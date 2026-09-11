@@ -1,0 +1,42 @@
+{
+  "id": "11ab0728156444b08799fe59b7e85d8f",
+  "created_at": "2026-09-10T22:38:39.363393+00:00",
+  "source_repo": "<SOURCE>",
+  "task": "Add a small in-memory TTL cache for GET /issues/<id>. The TTL is 60 seconds. Preserve the existing API behavior, ensure writes are immediately visible, keep app instances independent, and add tests covering caching, expiry, invalidation and missing issues. Run python3 -m pytest -q to verify.",
+  "test_command": "python3 -m pytest -q",
+  "status": "succeeded",
+  "working_repo": "<RUN>/repo",
+  "snapshot_id": "11ab0728156444b08799fe59b7e85d8f",
+  "source_commit": "3d8f9c52f1188f45ed07e3f4fc95cc5126489bf0",
+  "snapshot_digest": "aa10836b92b49b580bbd25616093653f6f565485beada92b8e4f0bfe01a5aafa",
+  "original_commit": "68d557b5c89854b0d623e30bcc97064a98f30e56",
+  "baseline": {
+    "exit_code": 0,
+    "duration_ms": 425,
+    "timed_out": false
+  },
+  "agent": {
+    "exit_code": 0,
+    "duration_ms": 125157,
+    "timed_out": false
+  },
+  "final_test": {
+    "exit_code": 0,
+    "duration_ms": 277,
+    "timed_out": false
+  },
+  "duration_ms": 126032,
+  "action_count": 7,
+  "files_changed": [
+    "app.py",
+    "test_app.py"
+  ],
+  "final_diff": "diff --git a/app.py b/app.py\nindex 7c6ff88..de171a4 100644\n--- a/app.py\n+++ b/app.py\n@@ -1,26 +1,47 @@\n-\"\"\"Tiny issue tracker API; storage deliberately has no cache yet.\"\"\"\n+\"\"\"Tiny issue tracker API with a per-app issue cache.\"\"\"\n+from copy import deepcopy\n+from threading import RLock\n+from time import monotonic\n+\n from flask import Flask, jsonify, request\n \n \n+def _load_issue(issues, issue_id):\n+    return deepcopy(issues.get(issue_id))\n+\n+\n def create_app():\n     app = Flask(__name__)\n     issues = {1: {\"id\": 1, \"title\": \"Document the API\", \"status\": \"open\"}}\n+    cache = {}\n+    lock = RLock()\n \n     @app.get(\"/issues/<int:issue_id>\")\n     def get_issue(issue_id):\n-        issue = issues.get(issue_id)\n-        return (jsonify(issue), 200) if issue else (jsonify(error=\"not found\"), 404)\n+        with lock:\n+            now = monotonic()\n+            cached = cache.get(issue_id)\n+            if cached is not None and now < cached[0]:\n+                issue = cached[1]\n+            else:\n+                cache.pop(issue_id, None)\n+                issue = _load_issue(issues, issue_id)\n+                if issue is not None:\n+                    cache[issue_id] = (now + 60, issue)\n+            return (jsonify(issue), 200) if issue else (jsonify(error=\"not found\"), 404)\n \n     @app.patch(\"/issues/<int:issue_id>\")\n     def update_issue(issue_id):\n-        issue = issues.get(issue_id)\n-        if issue is None:\n-            return jsonify(error=\"not found\"), 404\n-        data = request.get_json(silent=True) or {}\n-        if \"title\" in data:\n-            issue[\"title\"] = data[\"title\"]\n-        if \"status\" in data:\n-            issue[\"status\"] = data[\"status\"]\n-        return jsonify(issue)\n+        with lock:\n+            issue = issues.get(issue_id)\n+            if issue is None:\n+                return jsonify(error=\"not found\"), 404\n+            data = request.get_json(silent=True) or {}\n+            if \"title\" in data:\n+                issue[\"title\"] = data[\"title\"]\n+            if \"status\" in data:\n+                issue[\"status\"] = data[\"status\"]\n+            cache.pop(issue_id, None)\n+            return jsonify(issue)\n \n     return app\ndiff --git a/test_app.py b/test_app.py\nindex d434153..2e77b57 100644\n--- a/test_app.py\n+++ b/test_app.py\n@@ -1,4 +1,7 @@\n from app import create_app\n+import app as app_module\n+import pytest\n+from unittest.mock import Mock\n \n \n def test_read_and_update():\n@@ -18,3 +21,79 @@ def test_independent_apps():\n     first, second = create_app().test_client(), create_app().test_client()\n     first.patch(\"/issues/1\", json={\"title\": \"Changed\"})\n     assert second.get(\"/issues/1\").json[\"title\"] == \"Document the API\"\n+\n+\n+@pytest.fixture\n+def cache_probe(monkeypatch):\n+    clock = Mock(return_value=100.0)\n+    loader = Mock(wraps=app_module._load_issue)\n+    monkeypatch.setattr(app_module, \"monotonic\", clock)\n+    monkeypatch.setattr(app_module, \"_load_issue\", loader)\n+    return clock, loader\n+\n+\n+def test_cache_hit_and_expiry(cache_probe):\n+    clock, loader = cache_probe\n+    client = create_app().test_client()\n+    original = client.get(\"/issues/1\")\n+    assert original.status_code == 200\n+    assert original.json == {\"id\": 1, \"title\": \"Document the API\", \"status\": \"open\"}\n+    assert original.mimetype == \"application/json\"\n+    assert loader.call_count == 1\n+    clock.return_value = 159.999\n+    cached = client.get(\"/issues/1\")\n+    assert cached.status_code == original.status_code\n+    assert cached.data == original.data\n+    assert cached.headers == original.headers\n+    assert loader.call_count == 1\n+    # Hits do not extend the TTL, and the boundary itself is expired.\n+    clock.return_value = 160.0\n+    assert client.get(\"/issues/1\").json == original.json\n+    assert loader.call_count == 2\n+    clock.return_value = 219.999\n+    assert client.get(\"/issues/1\").json == original.json\n+    assert loader.call_count == 2\n+    clock.return_value = 220.0\n+    assert client.get(\"/issues/1\").json == original.json\n+    assert loader.call_count == 3\n+\n+\n+def test_patch_invalidates_cache(cache_probe):\n+    _, loader = cache_probe\n+    client = create_app().test_client()\n+    client.get(\"/issues/1\")\n+    updated = client.patch(\"/issues/1\", json={\"title\": \"Changed\", \"status\": \"closed\"})\n+    assert updated.status_code == 200\n+    assert updated.json == {\"id\": 1, \"title\": \"Changed\", \"status\": \"closed\"}\n+    assert client.get(\"/issues/1\").json == updated.json\n+    assert loader.call_count == 2\n+    assert client.get(\"/issues/1\").json == updated.json\n+    assert loader.call_count == 2\n+\n+\n+def test_missing_issues_are_not_cached(cache_probe):\n+    _, loader = cache_probe\n+    client = create_app().test_client()\n+    for _ in range(2):\n+        missing = client.get(\"/issues/99\")\n+        assert missing.status_code == 404\n+        assert missing.json == {\"error\": \"not found\"}\n+    assert loader.call_count == 2\n+    missing_patch = client.patch(\"/issues/99\", json={\"title\": \"New\"})\n+    assert missing_patch.status_code == 404\n+    assert missing_patch.json == {\"error\": \"not found\"}\n+    assert client.get(\"/issues/99\").status_code == 404\n+    assert client.get(\"/issues/1\").status_code == 200\n+\n+\n+def test_caches_are_independent(cache_probe):\n+    _, loader = cache_probe\n+    first, second = create_app().test_client(), create_app().test_client()\n+    original = first.get(\"/issues/1\").json\n+    assert second.get(\"/issues/1\").json == original\n+    assert loader.call_count == 2\n+    first.patch(\"/issues/1\", json={\"title\": \"Changed\"})\n+    assert second.get(\"/issues/1\").json == original\n+    assert loader.call_count == 2\n+    assert first.get(\"/issues/1\").json[\"title\"] == \"Changed\"\n+    assert loader.call_count == 3",
+  "diagnosis": null,
+  "diagnosis_error": null,
+  "error": null,
+  "parent_run_id": null,
+  "intervention": null,
+  "codex_version": "codex-cli 0.153.4",
+  "recorded": false
+}

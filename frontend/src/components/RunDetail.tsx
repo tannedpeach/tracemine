@@ -281,8 +281,9 @@ export default function RunDetail({
         <section className="panel artifacts">
           <h2>Audit trail</h2>
           <p>
-            Original process bytes are retained locally. Downloads may contain
-            source code and private paths; review before sharing.
+            {run.recorded
+              ? "This recording contains checksummed, redacted copies of real logs. Local path prefixes were replaced for publication; outcomes and event order are unchanged."
+              : "Original process bytes are retained locally. Downloads may contain source code and private paths; review before sharing."}
           </p>
           <div className="artifact-list">
             {artifacts.map((name) => (

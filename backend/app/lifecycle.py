@@ -49,8 +49,14 @@ class Runner:
         run = Run(
             id=run_id,
             source_repo=source,
-            task=request.task,
-            test_command=request.test_command,
+            task=parent.task if parent else request.task,
+            test_command=parent.test_command if parent else request.test_command,
+            agent_backend=(
+                "codex"
+                if isinstance(self.adapter, CodexAdapter)
+                and (parent is None or parent.agent_backend == "codex")
+                else "test-double"
+            ),
             snapshot_id=parent.snapshot_id if parent else run_id,
             snapshot_digest=parent.snapshot_digest if parent else None,
             source_commit=parent.source_commit if parent else None,
@@ -173,14 +179,14 @@ class Runner:
             final_repo, run.test_command, logs, "final", self.test_timeout
         )
         if run.agent.timed_out or run.agent.exit_code:
-            raise RuntimeError(
+            run.error = (
                 f"Agent process did not complete normally (exit {run.agent.exit_code}, "
                 f"timeout {run.agent.timed_out}); final tests were still captured"
             )
         if run.final_test.timed_out:
             raise RuntimeError("Final tests timed out; no pass/fail conclusion")
         if run.final_test.exit_code == 0:
-            self.state(run, "succeeded")
+            self.state(run, "error" if run.error else "succeeded")
             return
         self.state(run, "diagnosing")
         try:

@@ -12,9 +12,9 @@
 - [x] Conservative structured diagnosis with validated event references (real failing-run validation pending).
 - [x] Clean-baseline recovery and measured comparison (integration-tested; live validation pending).
 - [x] Error handling, process timeouts, isolation and lifecycle tests (25 passing; Python type checks pass).
-- [ ] Real reproducible demo evidence and polished UI.
-- [ ] README, short demo recording, fresh-clone validation.
-- [ ] Cursor submission review; address all eight review questions.
+- [x] Real reproducible demo evidence and polished UI (three real passing runs; one redacted recording is reproducible).
+- [x] README, setup/check scripts, CI, and visual UI review; short recording and full fresh-clone validation remain outstanding.
+- [ ] Cursor submission review; honest outstanding gaps documented in docs/submission-review.md.
 
 No stretch goals before the definition of done. All real logs remain in ignored local storage; only explicitly reviewed, sanitized evidence belongs in Git.
 

@@ -61,6 +61,8 @@ class Diagnoser:
         evidence = {
             "task": run.task,
             "test_command": run.test_command,
+            "agent_result": run.agent.model_dump() if run.agent else None,
+            "execution_warning": run.error,
             "events": selected,
             "events_omitted": max(0, len(events) - len(selected)),
             "diff": run.final_diff[:40000],

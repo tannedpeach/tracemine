@@ -307,3 +307,26 @@ def test_git_resolution_preserves_python_environment(monkeypatch):
 
     monkeypatch.setenv("PATH", "/example/venv/bin:/usr/local/bin:/usr/bin:/bin")
     assert clean_env()["PATH"].split(":")[0] == "/example/venv/bin"
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        {"item": {"type": [], "id": {"unexpected": True}}},
+        {"item": {"type": "file_change", "changes": [None, "bad", {}]}},
+        {"item": {"type": "file_change", "changes": "not an array"}},
+    ],
+)
+def test_unexpected_event_shapes_are_auditable(raw):
+    event = normalize(json.dumps(raw).encode(), 1)
+    assert event.raw_event == raw
+
+
+def test_store_closes_connections(tmp_path):
+    import sqlite3
+
+    store = Store(tmp_path / "data")
+    with store.connect() as connection:
+        assert connection.execute("select 1").fetchone()[0] == 1
+    with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+        connection.execute("select 1")

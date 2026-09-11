@@ -1,0 +1,1 @@
+Add a small in-memory TTL cache for GET /issues/<id>. The TTL is 60 seconds. Preserve the existing API behavior, ensure writes are immediately visible, keep app instances independent, and add tests covering caching, expiry, invalidation and missing issues. Run python3 -m pytest -q to verify.

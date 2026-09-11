@@ -36,10 +36,15 @@ class Store:
             finally:
                 fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
-    def connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def connect(self):
         db = sqlite3.connect(self.database, timeout=10)
-        db.execute("PRAGMA foreign_keys=ON")
-        return db
+        try:
+            db.execute("PRAGMA foreign_keys=ON")
+            with db:
+                yield db
+        finally:
+            db.close()
 
     def save(self, run: Run) -> None:
         with self.connect() as db:

@@ -1,0 +1,88 @@
+{
+  "format": 1,
+  "kind": "redacted-real-run",
+  "run_id": "11ab0728156444b08799fe59b7e85d8f",
+  "redaction": "Local source, run, project, home and temporary path prefixes replaced with named placeholders. Original bytes retained locally.",
+  "files": {
+    "run.json": {
+      "original_sha256": "6b4e5df0bde8be43ff720f9967958bac103dd30757927d5df2fc0979f47cc48c",
+      "published_sha256": "4f0e5e2743a002e1bc18415c06017b2f4354867eb6a50cfe0be15b4cc62b101f"
+    },
+    "events.normalized.jsonl": {
+      "original_sha256": "1fc0424826457df02be75e3065a12bd8bc63c41d033c62c5a28a110604bfb5e5",
+      "published_sha256": "5b632815b7dde8b8863ec9eaeeaf885cedfa79f4ea876ce0e25456f057ea0618"
+    },
+    "logs/agent.prompt.txt": {
+      "original_sha256": "d46df38ad7b1895c0b513c9c91193e9394f1fc7089f18606f01d718603ed74ad",
+      "published_sha256": "d46df38ad7b1895c0b513c9c91193e9394f1fc7089f18606f01d718603ed74ad"
+    },
+    "logs/agent.result.json": {
+      "original_sha256": "af4ca3a8e6a49b834b1a673277600573b43830abeb803746090700b3fcc1cdb8",
+      "published_sha256": "af4ca3a8e6a49b834b1a673277600573b43830abeb803746090700b3fcc1cdb8"
+    },
+    "logs/agent.stderr": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "published_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "logs/agent.stdout": {
+      "original_sha256": "2b4613bb0b6098c88d8f9b4fe58a62f24807054f632a0c27fe2ac198553e45c5",
+      "published_sha256": "e51df59c3544d482f67dbf6464b3e94a97af69a1cea73f194388a2e921a94b79"
+    },
+    "logs/baseline.result.json": {
+      "original_sha256": "fb2715d05ba7b28d4f9baa89088313f75f7615a22a0444fab607fed5a3d9efec",
+      "published_sha256": "fb2715d05ba7b28d4f9baa89088313f75f7615a22a0444fab607fed5a3d9efec"
+    },
+    "logs/baseline.stderr": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "published_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "logs/baseline.stdout": {
+      "original_sha256": "6493f6f0cf5d50dbd27bff2dc5ab7081995d89c8e1da9f7b1843f4ad03b610ec",
+      "published_sha256": "6493f6f0cf5d50dbd27bff2dc5ab7081995d89c8e1da9f7b1843f4ad03b610ec"
+    },
+    "logs/codex-version.result.json": {
+      "original_sha256": "e820f74f992a1f051e16c973835c3189e82badac117a228e38597ec3164f4614",
+      "published_sha256": "e820f74f992a1f051e16c973835c3189e82badac117a228e38597ec3164f4614"
+    },
+    "logs/codex-version.stderr": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "published_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "logs/codex-version.stdout": {
+      "original_sha256": "616dba4e87de2b1f07e61fe30ff4a5b3b075986c986c466ac5d244597eac0f36",
+      "published_sha256": "616dba4e87de2b1f07e61fe30ff4a5b3b075986c986c466ac5d244597eac0f36"
+    },
+    "logs/final.diff": {
+      "original_sha256": "298fc6c05445b527b5f908fd5d2de52c43ac7fab079cae7ddcca9fa84dda5a07",
+      "published_sha256": "298fc6c05445b527b5f908fd5d2de52c43ac7fab079cae7ddcca9fa84dda5a07"
+    },
+    "logs/final.result.json": {
+      "original_sha256": "96a76945219430db854d2389b0fb6579c59481e864fae4343ed44a33d15481f2",
+      "published_sha256": "96a76945219430db854d2389b0fb6579c59481e864fae4343ed44a33d15481f2"
+    },
+    "logs/final.stderr": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "published_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "logs/final.stdout": {
+      "original_sha256": "33ceaa0d737d4006ec8ba3fe8bdb5c94696ba33d8c2c6ca14092b20570b1c688",
+      "published_sha256": "33ceaa0d737d4006ec8ba3fe8bdb5c94696ba33d8c2c6ca14092b20570b1c688"
+    },
+    "input/.gitignore": {
+      "original_sha256": "ee60c8129f20760938b7e89121f54087ab0c4773f2bd6c7d4355fd706231c544",
+      "published_sha256": "ee60c8129f20760938b7e89121f54087ab0c4773f2bd6c7d4355fd706231c544"
+    },
+    "input/app.py": {
+      "original_sha256": "dbd7b3abf0cfa3e43674e8b8a07ed6de6276d98c19c858fd94f738eb9d2dd6ea",
+      "published_sha256": "dbd7b3abf0cfa3e43674e8b8a07ed6de6276d98c19c858fd94f738eb9d2dd6ea"
+    },
+    "input/requirements.txt": {
+      "original_sha256": "3068291528ddcaff864571b73f1b764e9eb63692f25f019c4c57dfaedf377b84",
+      "published_sha256": "3068291528ddcaff864571b73f1b764e9eb63692f25f019c4c57dfaedf377b84"
+    },
+    "input/test_app.py": {
+      "original_sha256": "03906463700285c08e2b00e4bb72ed0578555aa850bb647bb89a8457e3148ae4",
+      "published_sha256": "03906463700285c08e2b00e4bb72ed0578555aa850bb647bb89a8457e3148ae4"
+    }
+  }
+}
