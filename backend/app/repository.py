@@ -189,7 +189,15 @@ def sandbox_command(repo: Path, command: str) -> tuple[list[str], dict[str, str]
 
 
 async def run_tests(
-    repo: Path, command: str, logs: Path, name: str, timeout: float
+    repo: Path,
+    command: str,
+    logs: Path,
+    name: str,
+    timeout: float,
+    evaluator: Path | None = None,
 ) -> ProcessResult:
     args, env = sandbox_command(repo, command)
+    if evaluator is not None:
+        env["TRACEMINE_EVALUATOR"] = str(evaluator.resolve())
+        args[-1] = f'{command} && python3 "$TRACEMINE_EVALUATOR" "$PWD"'
     return await execute(args, repo, logs, name, timeout, env=env)

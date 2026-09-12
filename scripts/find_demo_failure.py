@@ -19,6 +19,19 @@ from app.store import Store
 PROJECT = Path(__file__).resolve().parents[1]
 COMMAND = "python3 -m pytest -q"
 CANDIDATES_V2 = tuple(json.loads((PROJECT / "scripts/candidate_suite_v2.json").read_text()))
+CANDIDATES_LIVE = (
+    (
+        "rate-limiter-live",
+        "Implement a per-client sliding-window rate limiter allowing 3 accepted requests "
+        "in any 10-second window. Keep the injectable clock and allow(client) API. The "
+        "fourth request inside the window is rejected. A request exactly 10 seconds after "
+        "the oldest accepted request is allowed, while requests at the other timestamps "
+        "remain inside the rolling window. Rejected requests do not extend the window. "
+        "Clients are isolated and expired timestamps are pruned. Add deterministic tests "
+        "for staggered timestamps, exact boundaries, rejected requests and isolation. "
+        "Run the full supplied test suite.",
+    ),
+)
 CANDIDATES = (
     (
         "cursor-pagination",
@@ -111,14 +124,18 @@ async def main() -> int:
     parser.add_argument("--data", type=Path, default=PROJECT / ".tracemine-candidates")
     parser.add_argument("--ledger", type=Path, default=PROJECT / "docs/experiments.md")
     parser.add_argument("--recover", help="One manually reviewed parent run ID")
-    parser.add_argument("--suite", choices=("v1", "v2"), default="v1")
+    parser.add_argument("--suite", choices=("v1", "v2", "live"), default="v1")
     parser.add_argument(
         "--resume-process-error", help="One explicitly authorized process-error restart"
     )
     args = parser.parse_args()
     store = Store(args.data)
     runner = Runner(store)
-    selected_candidates = CANDIDATES if args.suite == "v1" else CANDIDATES_V2
+    selected_candidates = {
+        "v1": CANDIDATES,
+        "v2": CANDIDATES_V2,
+        "live": CANDIDATES_LIVE,
+    }[args.suite]
     index = store.root / f"candidate-suite-{args.suite}.json"
     with store.claim():
         store.interrupt_pending()
@@ -166,7 +183,16 @@ async def main() -> int:
                 print(f"Already attempted {key}: {previous.id} ({classify(previous)})", flush=True)
                 continue
             run = runner.create(
-                RunRequest(repo=str(PROJECT / "examples" / name), task=task, test_command=COMMAND),
+                RunRequest(
+                    repo=str(PROJECT / "examples" / name),
+                    task=task,
+                    test_command=COMMAND,
+                    evaluator_path=(
+                        str(PROJECT / "evaluators/rate_limiter.py")
+                        if args.suite == "live"
+                        else None
+                    ),
+                ),
                 parent,
             )
             attempted[key] = run.id

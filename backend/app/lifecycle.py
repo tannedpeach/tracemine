@@ -51,6 +51,7 @@ class Runner:
             source_repo=source,
             task=parent.task if parent else request.task,
             test_command=parent.test_command if parent else request.test_command,
+            evaluator_path=parent.evaluator_path if parent else request.evaluator_path,
             agent_backend=(
                 "codex"
                 if isinstance(self.adapter, CodexAdapter)
@@ -176,7 +177,12 @@ class Runner:
         final_repo = directory / "verification"
         await asyncio.to_thread(snapshot, repo, final_repo, False)
         run.final_test = await run_tests(
-            final_repo, run.test_command, logs, "final", self.test_timeout
+            final_repo,
+            run.test_command,
+            logs,
+            "final",
+            self.test_timeout,
+            Path(run.evaluator_path) if run.evaluator_path else None,
         )
         if run.agent.timed_out or run.agent.exit_code:
             run.error = (

@@ -11,6 +11,7 @@ class RunRequest(BaseModel):
     repo: str = Field(min_length=1, max_length=4096)
     task: str = Field(min_length=1, max_length=20000)
     test_command: str = Field(min_length=1, max_length=4000)
+    evaluator_path: str | None = Field(default=None, max_length=4096)
 
 
 class ProcessResult(BaseModel):
@@ -74,6 +75,7 @@ class Run(BaseModel):
     source_repo: str
     task: str
     test_command: str
+    evaluator_path: str | None = None
     status: Status = "created"
     working_repo: str = ""
     snapshot_id: str = ""
