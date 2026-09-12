@@ -12,7 +12,7 @@ PROJECT = Path(__file__).resolve().parents[2]
 HARNESS = runpy.run_path(str(PROJECT / "scripts/find_demo_failure.py"))
 
 
-@pytest.mark.parametrize("name,task", HARNESS["CANDIDATES"])
+@pytest.mark.parametrize("name,task", (*HARNESS["CANDIDATES"], *HARNESS["CANDIDATES_V2"]))
 async def test_candidate_has_healthy_isolated_baseline(name, task, tmp_path):
     repo = tmp_path / "repo"
     snapshot(PROJECT / "examples" / name, repo)

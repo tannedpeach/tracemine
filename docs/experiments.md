@@ -34,6 +34,12 @@ A genuine failed final test followed by diagnosed recovery is still being sought
 The suite was executed once in fixed order and stopped on the documented usage
 error. No prompt mutation, environment sabotage or repeated attempt was used.
 
+On September 12 the user authorized exactly one restart of the interrupted limiter.
+It passed 6 tests (agent exit 0, final exit 0, 7 actions, 151.277 seconds).
+The input digest and complete agent prompt match the interrupted attempt. This
+completes suite v1 with no genuine coding failure. The original process error and
+its raw logs remain retained. Suite v2 is fixed in docs/suite-v2.md before execution.
+
 ## cursor-pagination: 2026-09-11T22:58:50.840597+00:00
 
 <!-- run:471b5f297cc84929b842008478f43404 -->
@@ -66,3 +72,15 @@ error. No prompt mutation, environment sabotage or repeated attempt was used.
 - Actions: 5; agent duration: 58247 ms
 - Classification: **agent process error**
 - Parent: none
+
+## rate-limiter: 2026-09-12T20:07:41.642673+00:00
+
+<!-- run:2dc6e7948f864e7d9a4bbb57bb816d18 -->
+- Run: `2dc6e7948f864e7d9a4bbb57bb816d18`; fixture: `examples/rate-limiter`
+- Task: Migrate RateLimiter from fixed windows to a per-client sliding window allowing 3 accepted requests in any 10-second window. Keep the injectable monotonic clock and allow(client) API. The fourth request is rejected; rejected requests must not extend the window. Exactly 10 seconds after the oldest accepted request, another is allowed. Clients and instances are isolated. Prune expired timestamps and keep per-client history bounded by the accepted-request limit. Add deterministic tests using a fake clock (no sleeps) for exact and just-before boundaries, crossing the old fixed-window boundary, repeated rejections, simultaneous timestamps, client isolation and pruning after long idle periods. Verify the full suite.
+- Test command: `python3 -m pytest -q`
+- Agent exit: 0; final test exit: 0
+- Actions: 7; agent duration: 151277 ms
+- Classification: **success**
+- Parent: none
+- Authorized process restart of: `2e84d4c255784c5d9953103da0598fb7`; no diagnostic hint added.

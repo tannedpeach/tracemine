@@ -18,6 +18,7 @@ from app.store import Store
 
 PROJECT = Path(__file__).resolve().parents[1]
 COMMAND = "python3 -m pytest -q"
+CANDIDATES_V2 = tuple(json.loads((PROJECT / "scripts/candidate_suite_v2.json").read_text()))
 CANDIDATES = (
     (
         "cursor-pagination",
@@ -110,13 +111,15 @@ async def main() -> int:
     parser.add_argument("--data", type=Path, default=PROJECT / ".tracemine-candidates")
     parser.add_argument("--ledger", type=Path, default=PROJECT / "docs/experiments.md")
     parser.add_argument("--recover", help="One manually reviewed parent run ID")
+    parser.add_argument("--suite", choices=("v1", "v2"), default="v1")
     parser.add_argument(
         "--resume-process-error", help="One explicitly authorized process-error restart"
     )
     args = parser.parse_args()
     store = Store(args.data)
     runner = Runner(store)
-    index = store.root / "candidate-suite-v1.json"
+    selected_candidates = CANDIDATES if args.suite == "v1" else CANDIDATES_V2
+    index = store.root / f"candidate-suite-{args.suite}.json"
     with store.claim():
         store.interrupt_pending()
         attempted = json.loads(index.read_text()) if index.exists() else {}
@@ -128,7 +131,7 @@ async def main() -> int:
             if not resumed or classify(resumed) != "agent process error":
                 raise SystemExit("Restart requires a retained agent process error")
             name = next((key for key, value in attempted.items() if value == resumed.id), None)
-            if name not in dict(CANDIDATES):
+            if name not in dict(selected_candidates):
                 raise SystemExit("Only an original suite candidate may be restarted once")
             with tempfile.TemporaryDirectory(prefix="tracemine-input-check-") as check:
                 digest = snapshot(Path(resumed.source_repo), Path(check) / "copy")
@@ -145,13 +148,14 @@ async def main() -> int:
             name = next((key for key, value in attempted.items() if value == parent.id), None)
             if name is None:
                 raise SystemExit("Parent is not part of this fixed suite")
+            name = Path(parent.source_repo).name
             key = f"{name}-recovery"
             if key in attempted:
                 raise SystemExit(f"Recovery already attempted: {attempted[key]}")
             candidates = [(name, parent.task)]
         else:
             parent = None
-            candidates = list(CANDIDATES)
+            candidates = list(selected_candidates)
         for name, task in candidates:
             key = f"{name}-process-restart" if resumed else f"{name}-recovery" if parent else name
             if key in attempted:
