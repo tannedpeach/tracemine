@@ -17,4 +17,6 @@ Tracked files and all existing commits were scanned for machine-specific home pa
 
 Outstanding: genuine failed-run diagnosis/recovery evidence, a recording of that complete story, and all 13 Definition of Done steps on a fresh checkout. Five normally completed live experiments passed; infrastructure errors and test doubles are not relabeled as model failures. No stretch goals until these gaps are resolved.
 
-Finalization suite v1 added three fixed realistic candidates. Pagination and idempotent orders passed; the limiter stopped on a Codex usage-limit process error before final verification. No candidate produced a valid coding-failure artifact, so no diagnosis or recovery was fabricated.
+Finalization suite v1 added three fixed realistic candidates. Pagination and idempotent orders passed; the limiter's one authorized restart passed after the initial Codex usage-limit process error. Suite v2 then ran three new interacting-requirement tasks once; all passed. No candidate produced a valid coding-failure artifact, so no diagnosis or recovery was fabricated.
+
+The submission gate remains intentionally open. Across v1 and v2, every normally completed candidate passed; the only non-pass was the documented usage-limit process error. There is still no valid live failure to diagnose or recover.

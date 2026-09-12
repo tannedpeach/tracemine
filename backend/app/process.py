@@ -35,8 +35,8 @@ def clean_env() -> dict[str, str]:
     # Do not pass arbitrary application tokens to repository tests / agent commands.
     keys = ("PATH", "HOME", "LANG", "LC_ALL", "SYSTEMROOT", "CODEX_HOME")
     env = {key: os.environ[key] for key in keys if key in os.environ}
+    entries = env.get("PATH", os.defpath).split(os.pathsep)
     if directory := git_binary_directory():
-        entries = env.get("PATH", os.defpath).split(os.pathsep)
         index = entries.index("/usr/bin") if "/usr/bin" in entries else len(entries)
         entries.insert(index, directory)
         env["PATH"] = os.pathsep.join(entries)

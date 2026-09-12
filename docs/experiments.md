@@ -51,6 +51,12 @@ its raw logs remain retained. Suite v2 is fixed in docs/suite-v2.md before execu
 - Classification: **success**
 - Parent: none
 
+Suite v2 ran once in its frozen order. Transactional cache passed 28 tests,
+lease queue passed 19 tests, and document transactions passed its full suite
+(7 actions, 142.930 seconds).
+No candidate met the criteria for diagnosis and recovery; no failure was
+manufactured or relabeled.
+
 ## idempotent-orders: 2026-09-11T23:01:18.885423+00:00
 
 <!-- run:98619d8ce1074ab9ac83f22297650073 -->
@@ -84,3 +90,36 @@ its raw logs remain retained. Suite v2 is fixed in docs/suite-v2.md before execu
 - Classification: **success**
 - Parent: none
 - Authorized process restart of: `2e84d4c255784c5d9953103da0598fb7`; no diagnostic hint added.
+
+## transactional-cache: 2026-09-12T20:14:02.975145+00:00
+
+<!-- run:c6cf16dc31094306b7da0d5cf686a341 -->
+- Run: `c6cf16dc31094306b7da0d5cf686a341`; fixture: `examples/transactional-cache`
+- Task: Optimize Store.apply so a small transaction does not deepcopy every record and cache entry before starting. Use a write-proportional rollback mechanism while preserving the existing observable contract, including sequential version checks for repeated keys, deletion followed by recreation, exact restoration of cache membership and contents on any exception, and independent mutable values returned by reads, callbacks and results. The staging callback may read other records through Store.read before it raises. Keep the API and exception behavior. Do not weaken existing tests. Add deterministic tests for repeated-key rollback, cold-cache reads during failed staging, stale optimistic versions, late failures and mutation aliasing. Verify the full suite.
+- Test command: `python3 -m pytest -q`
+- Agent exit: 0; final test exit: 0
+- Actions: 10; agent duration: 155217 ms
+- Classification: **success**
+- Parent: none
+
+## lease-queue: 2026-09-12T20:16:38.988512+00:00
+
+<!-- run:ca0db6cdfe714eb591bac0c7416437c3 -->
+- Run: `ca0db6cdfe714eb591bac0c7416437c3`; fixture: `examples/lease-queue`
+- Task: Replace Queue.claim's full scan with heap-based indexes for delayed jobs and lease expirations. Preserve the existing contract exactly: select eligible jobs by original ready time then insertion order, expire leases at the exact deadline, increment fencing generations on each claim, reject stale finish calls without state changes, retain submit idempotency even for completed jobs, and respect retry_at. dump and restore must remain compatible with the existing serialized data and rebuild indexes, including active leases. Obsolete heap entries must never cause duplicate claims or resurrect done jobs. Avoid scanning all jobs on each claim; lazy invalidation is acceptable. Preserve input/output payload isolation. Add deterministic coverage for stale heap entries, retries, exact expiration and restore. Verify all existing and added tests.
+- Test command: `python3 -m pytest -q`
+- Agent exit: 0; final test exit: 0
+- Actions: 7; agent duration: 144259 ms
+- Classification: **success**
+- Parent: none
+
+## document-transactions: 2026-09-12T20:19:04.001900+00:00
+
+<!-- run:b49390f3fd4d40ecbaeae05618edf9b4 -->
+- Run: `b49390f3fd4d40ecbaeae05618edf9b4`; fixture: `examples/document-transactions`
+- Task: Extend the atomic JSON-tree edit engine with move operations using the existing list-of-components paths: remove the value at from, then place it at path, interpreting the destination against the document after removal. At a list destination insert before the specified index (index equal to length appends); a dict destination replaces or creates that key. Moving a path to itself is a no-op. Reject moving a container into its descendant before modification, and reject removing the root except that moving root to itself is a no-op. A destination [] replaces the root. All operations in a batch observe earlier edits; a later failed test or invalid move must leave the caller's document and operation objects unchanged. Preserve existing set/remove/append/copy/test behavior and complete mutable isolation of the result. Add deterministic tests for same-list forward/backward moves, descendant rejection, overlapping siblings, root destination, copying a moved value, and rollback after a late invalid transition. Verify the full suite.
+- Test command: `python3 -m pytest -q`
+- Agent exit: 0; final test exit: 0
+- Actions: 7; agent duration: 142930 ms
+- Classification: **success**
+- Parent: none

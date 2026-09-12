@@ -11,7 +11,7 @@
 - [x] Run fixed suite v1 once and record every outcome.
 - [x] Complete the one authorized restart of the interrupted rate-limiter candidate: 6 tests passed. Suite v1 is complete.
 - [x] Freeze suite v2 with three new tasks and passing isolated baselines before any live invocation.
-- [ ] Execute suite v2 once and preserve all outcomes.
+- [x] Execute suite v2 once and preserve all outcomes: all three candidates passed; no genuine coding failure appeared.
 - [ ] Manually review a genuine candidate failure when one occurs.
 - [x] Repository snapshot, baseline tests, adapter, persistence, final tests/diff.
 - [x] API and React form, saved runs, trajectory inspection.
