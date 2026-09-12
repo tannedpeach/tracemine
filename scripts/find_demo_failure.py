@@ -8,10 +8,12 @@ before using --recover RUN_ID. Resume skips recorded candidates in this data sto
 import argparse
 import asyncio
 import json
+import tempfile
 from pathlib import Path
 
 from app.lifecycle import Runner
 from app.models import Run, RunRequest
+from app.repository import snapshot
 from app.store import Store
 
 PROJECT = Path(__file__).resolve().parents[1]
@@ -90,7 +92,7 @@ def record(ledger: Path, name: str, run: Run) -> None:
         return
     with ledger.open("a") as output:
         output.write(
-            f"\n## {name} — {run.created_at}\n\n{marker}\n"
+            f"\n## {name}: {run.created_at}\n\n{marker}\n"
             f"- Run: `{run.id}`; fixture: `examples/{name}`\n"
             f"- Task: {run.task}\n"
             f"- Test command: `{run.test_command}`\n"
@@ -108,6 +110,9 @@ async def main() -> int:
     parser.add_argument("--data", type=Path, default=PROJECT / ".tracemine-candidates")
     parser.add_argument("--ledger", type=Path, default=PROJECT / "docs/experiments.md")
     parser.add_argument("--recover", help="One manually reviewed parent run ID")
+    parser.add_argument(
+        "--resume-process-error", help="One explicitly authorized process-error restart"
+    )
     args = parser.parse_args()
     store = Store(args.data)
     runner = Runner(store)
@@ -115,7 +120,25 @@ async def main() -> int:
     with store.claim():
         store.interrupt_pending()
         attempted = json.loads(index.read_text()) if index.exists() else {}
-        if args.recover:
+        resumed = None
+        if args.recover and args.resume_process_error:
+            raise SystemExit("Choose either recovery or process restart")
+        if args.resume_process_error:
+            resumed = store.get(args.resume_process_error)
+            if not resumed or classify(resumed) != "agent process error":
+                raise SystemExit("Restart requires a retained agent process error")
+            name = next((key for key, value in attempted.items() if value == resumed.id), None)
+            if name not in dict(CANDIDATES):
+                raise SystemExit("Only an original suite candidate may be restarted once")
+            with tempfile.TemporaryDirectory(prefix="tracemine-input-check-") as check:
+                digest = snapshot(Path(resumed.source_repo), Path(check) / "copy")
+            if digest != resumed.snapshot_digest:
+                raise SystemExit("Candidate input changed; refusing restart")
+            if f"{name}-process-restart" in attempted:
+                raise SystemExit("This candidate already received its one authorized restart")
+            parent = None
+            candidates = [(name, resumed.task)]
+        elif args.recover:
             parent = store.get(args.recover)
             if not parent or not classify(parent).startswith("coding failure candidate"):
                 raise SystemExit("Recovery requires a normally completed coding failure")
@@ -130,7 +153,7 @@ async def main() -> int:
             parent = None
             candidates = list(CANDIDATES)
         for name, task in candidates:
-            key = f"{name}-recovery" if parent else name
+            key = f"{name}-process-restart" if resumed else f"{name}-recovery" if parent else name
             if key in attempted:
                 previous = store.get(attempted[key])
                 if previous is None:
@@ -151,6 +174,11 @@ async def main() -> int:
                 await runner.run(run)
             finally:
                 record(args.ledger, name, run)
+                if resumed:
+                    with args.ledger.open("a") as output:
+                        output.write(
+                            f"- Authorized process restart of: `{resumed.id}`; no diagnostic hint added.\n"
+                        )
             outcome = classify(run)
             print(f"{run.id}: {outcome}", flush=True)
             if outcome.startswith("coding failure candidate"):

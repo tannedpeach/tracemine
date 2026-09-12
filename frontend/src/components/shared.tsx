@@ -1,5 +1,5 @@
 export const duration = (ms: number | null | undefined) =>
-  ms == null ? "—" : ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(1)} s`;
+  ms == null ? "N/A" : ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(1)} s`;
 export const labels: Record<string, string> = {
   succeeded: "Tests passed",
   failed: "Tests failed",

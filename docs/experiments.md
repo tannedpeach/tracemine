@@ -28,13 +28,13 @@ A genuine failed final test followed by diagnosed recovery is still being sought
 | Candidate | Agent exit | Final test exit | Actions | Agent duration | Classification |
 |---|---:|---:|---:|---:|---|
 | Cursor pagination (`471b5f…`) | 0 | 0 | 7 | 147.059 s | Success; 52 tests passed |
-| Idempotent orders (`98619d…`) | 0 | 0 | 8 | 112.850 s | Success; 21 tests passed |
+| Idempotent orders (`98619d…`) | 0 | 0 | 7 | 112.850 s | Success; 21 tests passed |
 | Sliding-window limiter (`2e84d4…`) | 1 | 5 | 5 | 58.247 s | Agent process error: Codex account usage limit; no final verification conclusion |
 
 The suite was executed once in fixed order and stopped on the documented usage
 error. No prompt mutation, environment sabotage or repeated attempt was used.
 
-## cursor-pagination — 2026-09-11T22:58:50.840597+00:00
+## cursor-pagination: 2026-09-11T22:58:50.840597+00:00
 
 <!-- run:471b5f297cc84929b842008478f43404 -->
 - Run: `471b5f297cc84929b842008478f43404`; fixture: `examples/cursor-pagination`
@@ -45,7 +45,7 @@ error. No prompt mutation, environment sabotage or repeated attempt was used.
 - Classification: **success**
 - Parent: none
 
-## idempotent-orders — 2026-09-11T23:01:18.885423+00:00
+## idempotent-orders: 2026-09-11T23:01:18.885423+00:00
 
 <!-- run:98619d8ce1074ab9ac83f22297650073 -->
 - Run: `98619d8ce1074ab9ac83f22297650073`; fixture: `examples/idempotent-orders`
@@ -56,7 +56,7 @@ error. No prompt mutation, environment sabotage or repeated attempt was used.
 - Classification: **success**
 - Parent: none
 
-## rate-limiter — 2026-09-11T23:03:12.488455+00:00
+## rate-limiter: 2026-09-11T23:03:12.488455+00:00
 
 <!-- run:2e84d4c255784c5d9953103da0598fb7 -->
 - Run: `2e84d4c255784c5d9953103da0598fb7`; fixture: `examples/rate-limiter`

@@ -2,7 +2,7 @@
 
 [![Check](https://github.com/tannedpeach/tracemine/actions/workflows/check.yml/badge.svg)](https://github.com/tannedpeach/tracemine/actions/workflows/check.yml)
 
-**Find the likely first consequential mistake in a failed coding-agent trajectory—and test whether a targeted hint helps it recover.**
+**Find the likely first consequential mistake in a failed coding-agent trajectory, then test whether a targeted hint helps it recover.**
 
 TraceMine is a local debugger for coding-agent developers. Give it a Python repository, a coding task, and a test command. Inspect the agent's decisions alongside the actual diff and failing tests, then retry from the same input snapshot.
 

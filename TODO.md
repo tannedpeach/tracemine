@@ -8,8 +8,9 @@
 
 ## Implementation order
 - [x] Finalization: fixed three-candidate suite and resumable bounded harness; no model overrides or repeated prompts.
-- [ ] Run the fixed suite once, record every outcome and manually review any candidate failure.
-- [x] Run fixed suite v1 once: two successes; third stopped on an explicit Codex usage-limit process error. No genuine coding failure appeared.
+- [x] Run fixed suite v1 once and record every outcome.
+- [ ] Complete the one authorized restart of the interrupted rate-limiter candidate.
+- [ ] Manually review a genuine candidate failure when one occurs.
 - [x] Repository snapshot, baseline tests, adapter, persistence, final tests/diff.
 - [x] API and React form, saved runs, trajectory inspection.
 - [x] Conservative structured diagnosis with validated event references (real failing-run validation pending).

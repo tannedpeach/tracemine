@@ -61,7 +61,7 @@ export default function RunDetail({
       <div className="metrics">
         <Metric
           label="FINAL TEST EXIT"
-          value={run.final_test?.exit_code ?? "—"}
+          value={run.final_test?.exit_code ?? "N/A"}
         />
         <Metric label="TOOL ACTIONS" value={run.action_count} />
         <Metric label="FILES CHANGED" value={run.files_changed.length} />
@@ -76,7 +76,7 @@ export default function RunDetail({
               ? run.baseline.exit_code === 0
                 ? "Passed"
                 : `Exit ${run.baseline.exit_code}`
-              : "—"
+              : "N/A"
           }
         />
       </div>
@@ -236,8 +236,8 @@ export default function RunDetail({
                   <span>
                     exit{" "}
                     {stage === "baseline"
-                      ? (run.baseline?.exit_code ?? "—")
-                      : (run.final_test?.exit_code ?? "—")}
+                      ? (run.baseline?.exit_code ?? "N/A")
+                      : (run.final_test?.exit_code ?? "N/A")}
                   </span>
                 </h3>
                 <pre>
@@ -392,8 +392,8 @@ function Comparison({ original, recovery }: { original: Run; recovery: Run }) {
           </tr>
           <tr>
             <th>Test exit code</th>
-            <td>{original.final_test?.exit_code ?? "—"}</td>
-            <td>{recovery.final_test?.exit_code ?? "—"}</td>
+            <td>{original.final_test?.exit_code ?? "N/A"}</td>
+            <td>{recovery.final_test?.exit_code ?? "N/A"}</td>
           </tr>
           <tr>
             <th>Tool actions</th>
