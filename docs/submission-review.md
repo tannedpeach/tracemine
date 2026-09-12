@@ -20,3 +20,5 @@ Outstanding: genuine failed-run diagnosis/recovery evidence, a recording of that
 Finalization suite v1 added three fixed realistic candidates. Pagination and idempotent orders passed; the limiter's one authorized restart passed after the initial Codex usage-limit process error. Suite v2 then ran three new interacting-requirement tasks once; all passed. No candidate produced a valid coding-failure artifact, so no diagnosis or recovery was fabricated.
 
 The submission gate remains intentionally open. Across v1 and v2, every normally completed candidate passed; the only non-pass was the documented usage-limit process error. There is still no valid live failure to diagnose or recover.
+
+An immutable-evaluator candidate is prepared and its first attempt is retained. Codex hit the account usage limit before launch, so it produced no coding result. One resume is permitted after the account resets; evaluator failure will be reviewed before any recovery attempt.

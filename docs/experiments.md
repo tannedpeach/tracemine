@@ -57,6 +57,22 @@ lease queue passed 19 tests, and document transactions passed its full suite
 No candidate met the criteria for diagnosis and recovery; no failure was
 manufactured or relabeled.
 
+## Immutable evaluator candidate
+
+The first evaluator-backed attempt (`51e97d...`) stopped before Codex launched:
+the account returned an explicit usage-limit error after 2.612 seconds. It is
+retained as an agent process error. The final test was not run, and it is not a
+coding failure. The one-time resume command is:
+
+```bash
+source .venv/bin/activate
+python scripts/find_demo_failure.py --suite live --resume-process-error 51e97d32ff95470abee566ccd4fd8d89
+```
+
+That command rechecks the retained input digest and runs the same frozen task
+with the same normal Codex settings. Final verification adds the immutable
+evaluator from `evaluators/rate_limiter.py` only after the visible tests pass.
+
 ## idempotent-orders: 2026-09-11T23:01:18.885423+00:00
 
 <!-- run:98619d8ce1074ab9ac83f22297650073 -->
@@ -122,4 +138,15 @@ manufactured or relabeled.
 - Agent exit: 0; final test exit: 0
 - Actions: 7; agent duration: 142930 ms
 - Classification: **success**
+- Parent: none
+
+## rate-limiter-live: 2026-09-12T20:42:04.111487+00:00
+
+<!-- run:51e97d32ff95470abee566ccd4fd8d89 -->
+- Run: `51e97d32ff95470abee566ccd4fd8d89`; fixture: `examples/rate-limiter-live`
+- Task: Implement a per-client sliding-window rate limiter allowing 3 accepted requests in any 10-second window. Keep the injectable clock and allow(client) API. The fourth request inside the window is rejected. A request exactly 10 seconds after the oldest accepted request is allowed, while requests at the other timestamps remain inside the rolling window. Rejected requests do not extend the window. Clients are isolated and expired timestamps are pruned. Add deterministic tests for staggered timestamps, exact boundaries, rejected requests and isolation. Run the full supplied test suite.
+- Test command: `python3 -m pytest -q`
+- Agent exit: 1; final test exit: 1
+- Actions: 0; agent duration: 2612 ms
+- Classification: **agent process error**
 - Parent: none
