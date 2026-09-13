@@ -1,6 +1,37 @@
 # Live experiment ledger
 
-## Current checkpoint: historical suite v4 frozen
+## Current checkpoint: historical suite v4 complete
+
+Freeze commit: `e95f26e`. Each candidate below received exactly one normal Codex
+attempt, with no overrides, intervention or recovery. All baseline, agent and final
+processes exited zero without timeouts. Supplied-test counts include agent-added
+tests discovered by the frozen command; evaluator results are reported separately.
+
+| Candidate | Run | Supplied tests | Evaluator | Actions | Agent time |
+|---|---|---|---|---:|---:|
+| cachetools | `a546b88c5f274177b0d76aaf38876254` | 161 passed | Passed | 15 | 97.636 s |
+| TinyDB | `6b8a6045d3d74e61a774c60660a7baf0` | 254 passed | Passed | 8 | 63.278 s |
+| Marshmallow | `4bfb9f8ed7e94cdc9aa5ab31740cc781` | 451 passed | Passed | 8 | 65.277 s |
+
+Manual review inspected the actual trajectories, source/test diffs and final logs.
+No upstream lookup or evaluator access appeared in the recorded actions. Each patch
+changes the implicated implementation and adds tests, without removing existing
+checks. Cachetools recalculates net size after eviction, TinyDB filters missing IDs
+inside update/remove, and Marshmallow resolves schema error aliases with declared
+field fallback. These observations support the passing results, not a claim of
+complete correctness or model generalization.
+
+No qualifying coding failure occurred. No diagnosis or recovery was run, and the
+passing-run GIF remains labeled as such. The fixed evaluation is closed; there will
+be no increasingly difficult follow-up suite under this protocol. The useful result
+is that independent historical regressions were reproducible and the agent solved
+these three scoped tasks. Live diagnosis quality and recovery remain unmeasured.
+
+All original JSONL, diffs, immutable evaluators, process results and snapshots remain
+in ignored `.tracemine-candidates/runs/RUN_ID/`; the attempt index has exactly the
+three candidate IDs above. A separate fresh clone reproduced all preflight outcomes
+and matched every frozen source and evaluator digest. Setup, 45 backend tests,
+frontend checks/build and the bundled passing patch reproduction also passed.
 
 Suite v3 is closed. The one unchanged snapshot-catalog restart passed with baseline,
 agent and final exits all zero. Its original missing-method verification error was
@@ -406,3 +437,42 @@ reviewing whether an authorized process restart is appropriate.
 - Classification: **success**
 - Parent: none
 - Authorized process restart of: `2391b8ee037d4d60bae946fd48f9961b`; no diagnostic hint added.
+
+## cachetools: 2026-09-13T20:14:50.495273+00:00
+
+<!-- run:a546b88c5f274177b0d76aaf38876254 -->
+- Run: `a546b88c5f274177b0d76aaf38876254`; source: `https://github.com/tkem/cachetools.git`
+- Source commit: `16e88894ef7d79b25a68f5a3b5411ed881342725`; input digest: `f53ba468cc840bf8ee865bbda47f36c33fafccec31faf91a324f7374751ac06c`
+- Baseline exit: 0
+- Task: Users of caches with custom value sizes report that replacing an existing value with a larger one unexpectedly discards other entries, even when the resulting contents fit within maxsize. Fix replacement behavior across the cache implementations: growing a value that fits, replacing with the same size, and shrinking must preserve unrelated entries and accurate currsize. When real eviction is necessary, preserve the documented eviction policy and valid size accounting, including when the policy chooses the key being replaced. Keep existing APIs and add regression tests. Run the supplied tests. Work from this checkout and its tests; do not look up upstream fixes.
+- Test command: `PYTHONPATH=src python3 -m pytest -q tests/test_cache.py tests/test_fifo.py tests/test_lru.py tests/test_lfu.py tests/test_rr.py tests/test_ttl.py tests/test_tlru.py`
+- Agent exit: 0; final test exit: 0
+- Actions: 15; agent duration: 97636 ms
+- Classification: **success**
+- Parent: none
+
+## tinydb: 2026-09-13T20:16:29.232524+00:00
+
+<!-- run:6b8a6045d3d74e61a774c60660a7baf0 -->
+- Run: `6b8a6045d3d74e61a774c60660a7baf0`; source: `https://github.com/msiemens/tinydb.git`
+- Source commit: `8a2dc204c265c07ce8506a3599a28e720b6dcdd7`; input digest: `58fff8b95e913bffd308f62f217b473bbe173793320679a6f5f8621769731c86`
+- Baseline exit: 0
+- Task: TinyDB get handles absent document IDs gracefully, but update and remove raise KeyError when doc_ids contains a missing ID. A mixed batch can leave earlier documents modified before the exception. Make ID-based update and remove skip missing IDs, process every existing target and return only affected IDs in request order. Preserve iterable doc_ids, mapping and callable updates, query-cache invalidation, and unrelated documents. Upsert with a Document ID must still update an existing document or insert a missing one. Preserve other query-based behavior. Add regression tests and run the supplied suite. Work from this checkout and its tests; do not look up upstream fixes.
+- Test command: `PYTHONPATH=. python3 -m pytest -q tests`
+- Agent exit: 0; final test exit: 0
+- Actions: 8; agent duration: 63278 ms
+- Classification: **success**
+- Parent: none
+
+## marshmallow: 2026-09-13T20:17:34.578788+00:00
+
+<!-- run:4bfb9f8ed7e94cdc9aa5ab31740cc781 -->
+- Run: `4bfb9f8ed7e94cdc9aa5ab31740cc781`; source: `https://github.com/marshmallow-code/marshmallow.git`
+- Source commit: `a578ed23092bd558acfbd9cd09a164108689326d`; input digest: `967905ffae07e32e3befb14eff55fade7f487a3436eb02cc53429bb25bc2cf2f`
+- Baseline exit: 0
+- Task: Validation errors are inconsistent for fields with data_key aliases. Field validators report the external key, but schema validators raising ValidationError(message, field_name=attribute_name) report the internal name. Make those schema-validator errors use the field's external data_key, merging with field errors under one key. Preserve error indexing for many=True, handling of declared fields excluded from the active schema, ordinary fields without aliases, unknown field names and schema-level errors. Explicit error dictionaries must retain their literal keys; do not reinterpret arbitrary user-supplied dictionaries. Add regression tests and run the supplied tests. Work from this checkout and its tests; do not look up upstream fixes.
+- Test command: `PYTHONPATH=src python3 -m pytest -q tests/test_decorators.py tests/test_error_store.py tests/test_deserialization.py`
+- Agent exit: 0; final test exit: 0
+- Actions: 8; agent duration: 65277 ms
+- Classification: **success**
+- Parent: none

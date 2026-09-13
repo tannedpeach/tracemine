@@ -11,7 +11,7 @@
 - [x] Freeze v3 with three independently verified state/ownership tasks before execution.
 - [x] Close v3: async-cache passed, durable-delivery was rejected as an evaluator mismatch, and the one unchanged snapshot-catalog restart passed.
 - [x] Validate and freeze three real historical bugs with passing baselines, failing pre-fix evaluators and passing known fixes.
-- [ ] Run historical suite v4 once in fixed order; stop at the first genuine coding failure and review diagnosis before one recovery.
+- [x] Run historical suite v4 once in fixed order: cachetools, TinyDB and Marshmallow passed supplied tests and independent evaluators. Close evaluation without more candidates or retries.
 - [x] Finalization: fixed three-candidate suite and resumable bounded harness; no model overrides or repeated prompts.
 - [x] Run fixed suite v1 once and record every outcome.
 - [x] Complete the one authorized restart of the interrupted rate-limiter candidate: 6 tests passed. Suite v1 is complete.
@@ -25,7 +25,7 @@
 - [x] API and React form, saved runs, trajectory inspection.
 - [x] Conservative structured diagnosis with validated event references (real failing-run validation pending).
 - [x] Clean-baseline recovery and measured comparison (integration-tested; live validation pending).
-- [x] Error handling, process timeouts, isolation and lifecycle tests (40 passing, including candidate baselines; Python type checks pass).
+- [x] Error handling, process timeouts, isolation and lifecycle tests (45 passing, including candidate baselines; Python type checks pass).
 - [x] Real reproducible evidence and polished UI (five completed live tasks passed; one redacted recording is reproducible).
 - [x] README, setup/check scripts, CI configuration, desktop and narrow-window UI review.
 - [x] Fresh-clone installation, complete checks and recorded patch reproduction.
@@ -37,6 +37,12 @@
 - [ ] Full 13-step Definition of Done from a fresh checkout and final Cursor submission approval.
 
 No stretch goals before the definition of done. All real logs remain in ignored local storage; only explicitly reviewed, sanitized evidence belongs in Git.
+
+September 13: fresh-clone setup, all checks, recorded patch reproduction and the
+historical preflight passed. All frozen input and evaluator hashes matched. The
+fixed experiment is complete, but the live failure/diagnosis/recovery steps of the
+Definition of Done remain unfulfilled. Do not manufacture evidence or launch more
+candidate suites to turn these unchecked items into a completion claim.
 
 Section 33 verified with codex-cli 0.153.4: 13 real JSONL records, exit 0, isolated edit and compilation. Source file unchanged. Raw evidence retained outside Git.
 

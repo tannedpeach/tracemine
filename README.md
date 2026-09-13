@@ -12,7 +12,7 @@ repo + task → Codex trajectory → failing tests → likely earlier mistake
                        compare outcomes ← fresh retry + targeted hint
 ```
 
-> Build status: the complete workflow is implemented and being validated. A genuine failed-run/recovery recording is still required before calling this portfolio-ready. No synthetic trajectory is presented as a real experiment. Suite v3 is closed: the unchanged snapshot-catalog restart passed. Three real historical bugs are validated and frozen for suite v4.
+> Evidence status: the workflow is implemented, but a genuine failed-run/recovery recording is still missing. The unchanged snapshot-catalog restart and all three historical bug candidates passed. The fixed evaluation is complete; no failure, diagnosis or recovery is fabricated. The full submission gate remains open.
 
 ![Recorded real run: trajectory, tests, diff and audit trail](docs/media/recorded-run.gif)
 
@@ -118,7 +118,13 @@ Local data lives in `.tracemine/` (ignored by Git), or `TRACEMINE_DATA`. It incl
 
 See [experiment ledger](docs/experiments.md) for actual live results and [submission review](docs/submission-review.md) for the final portfolio audit.
 
-Suite v3 analysis and execution outcomes are recorded in the ledger. Both asynchronous cache and snapshot-catalog passed their independent evaluators. Durable delivery was rejected because of an exception-class mismatch. No coding failure or recovery is claimed. Historical suite v4 uses pinned public repository states and independently validated regression checks.
+The [experiment ledger](docs/experiments.md) records the complete fixed evaluation.
+Historical suite v4 tested real cachetools, TinyDB and Marshmallow bugs at pinned
+pre-fix commits. Each independent regression failed before the historical fix and
+passed afterward. Codex then solved all three on its first attempt. This validates
+capture and verification on real repositories, but leaves failed-run diagnosis and
+recovery unvalidated by live evidence. The suite is closed; no further failure hunt
+is planned under this protocol.
 
 The [fixed candidate suite](examples/candidate-suite.md) evaluates three realistic
 tasks once each, records every result, and stops for manual review at the first

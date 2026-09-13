@@ -1,6 +1,17 @@
 # Cursor submission review
 
-Publication audit: September 11, 2026. The MVP code path is implemented, but submission completion remains open until a real failed-run recovery and recording are captured.
+Latest audit: September 13, 2026. The fixed historical evaluation is complete and all
+three candidates passed. Fresh-clone setup, all 45 backend tests, frontend checks
+and build, bundled patch reproduction, and historical preflight passed. The source
+and evaluator hashes matched the frozen definitions. Submission completion remains
+open: this evaluation produced no genuine coding failure, so live diagnosis,
+targeted recovery and the full core-story recording could not be validated.
+
+Reviewer conclusion: the README states the result and limitation immediately;
+historical sources, pinned inputs, test commands and outcomes are reproducible.
+The repository demonstrates capture and independent verification on real bugs.
+It does not yet demonstrate the central failed-run diagnosis/recovery claim. No
+new candidate suite or feature is justified by this result under the fixed protocol.
 
 - [x] First README screen explains the instrument: inspect an earlier mistake, test a targeted hint.
 - [x] Why the problem matters is specific to coding-agent evaluation and grounded in the author's failure-mining experience.
