@@ -12,7 +12,7 @@ repo + task → Codex trajectory → failing tests → likely earlier mistake
                        compare outcomes ← fresh retry + targeted hint
 ```
 
-> Build status: the complete workflow is implemented and being validated. A genuine failed-run/recovery recording is still required before calling this portfolio-ready. No synthetic trajectory is presented as a real experiment. The latest live attempt passed its supplied tests; manual review traced its verification failure to an evaluator defect, and the corrected evaluator passed the unchanged output.
+> Build status: the complete workflow is implemented and being validated. A genuine failed-run/recovery recording is still required before calling this portfolio-ready. No synthetic trajectory is presented as a real experiment. Suite v3 is closed: the unchanged snapshot-catalog restart passed. Three real historical bugs are validated and frozen for suite v4.
 
 ![Recorded real run: trajectory, tests, diff and audit trail](docs/media/recorded-run.gif)
 
@@ -118,7 +118,7 @@ Local data lives in `.tracemine/` (ignored by Git), or `TRACEMINE_DATA`. It incl
 
 See [experiment ledger](docs/experiments.md) for actual live results and [submission review](docs/submission-review.md) for the final portfolio audit.
 
-Suite v3 analysis and execution outcomes are recorded in the ledger. It includes one evaluator-passing asynchronous cache task, one manually rejected exception-class mismatch, and one usage-limit process error. No coding failure or recovery is claimed.
+Suite v3 analysis and execution outcomes are recorded in the ledger. Both asynchronous cache and snapshot-catalog passed their independent evaluators. Durable delivery was rejected because of an exception-class mismatch. No coding failure or recovery is claimed. Historical suite v4 uses pinned public repository states and independently validated regression checks.
 
 The [fixed candidate suite](examples/candidate-suite.md) evaluates three realistic
 tasks once each, records every result, and stops for manual review at the first

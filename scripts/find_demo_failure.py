@@ -7,19 +7,24 @@ before using --recover RUN_ID. Resume skips recorded candidates in this data sto
 
 import argparse
 import asyncio
+import hashlib
 import json
 import tempfile
 from pathlib import Path
 
 from app.lifecycle import Runner
 from app.models import Run, RunRequest
-from app.repository import snapshot
+from app.repository import git, snapshot
 from app.store import Store
 
 PROJECT = Path(__file__).resolve().parents[1]
 COMMAND = "python3 -m pytest -q"
 CANDIDATES_V2 = tuple(json.loads((PROJECT / "scripts/candidate_suite_v2.json").read_text()))
 CANDIDATES_V3 = tuple(json.loads((PROJECT / "scripts/candidate_suite_v3.json").read_text()))
+HISTORY = {
+    item["name"]: item
+    for item in json.loads((PROJECT / "scripts/historical_suite_v4.json").read_text())
+}
 CANDIDATES_LIVE = (
     (
         "rate-limiter-live",
@@ -108,7 +113,9 @@ def record(ledger: Path, name: str, run: Run) -> None:
     with ledger.open("a") as output:
         output.write(
             f"\n## {name}: {run.created_at}\n\n{marker}\n"
-            f"- Run: `{run.id}`; fixture: `examples/{name}`\n"
+            f"- Run: `{run.id}`; source: `{HISTORY[name]['repository'] if name in HISTORY else 'examples/' + name}`\n"
+            f"- Source commit: `{run.source_commit}`; input digest: `{run.snapshot_digest}`\n"
+            f"- Baseline exit: {run.baseline.exit_code if run.baseline else 'not run'}\n"
             f"- Task: {run.task}\n"
             f"- Test command: `{run.test_command}`\n"
             f"- Agent exit: {run.agent.exit_code if run.agent else 'not started'}; "
@@ -125,7 +132,7 @@ async def main() -> int:
     parser.add_argument("--data", type=Path, default=PROJECT / ".tracemine-candidates")
     parser.add_argument("--ledger", type=Path, default=PROJECT / "docs/experiments.md")
     parser.add_argument("--recover", help="One manually reviewed parent run ID")
-    parser.add_argument("--suite", choices=("v1", "v2", "v3", "live"), default="v1")
+    parser.add_argument("--suite", choices=("v1", "v2", "v3", "v4", "live"), default="v1")
     parser.add_argument(
         "--resume-process-error", help="One explicitly authorized process-error restart"
     )
@@ -136,6 +143,7 @@ async def main() -> int:
         "v1": CANDIDATES,
         "v2": CANDIDATES_V2,
         "v3": CANDIDATES_V3,
+        "v4": tuple((name, item["task"]) for name, item in HISTORY.items()),
         "live": CANDIDATES_LIVE,
     }[args.suite]
     index = store.root / f"candidate-suite-{args.suite}.json"
@@ -183,14 +191,37 @@ async def main() -> int:
                     raise SystemExit("Suite index references a missing run; inspect storage")
                 record(args.ledger, name, previous)
                 print(f"Already attempted {key}: {previous.id} ({classify(previous)})", flush=True)
+                if args.suite == "v4" and classify(previous) != "success":
+                    print(
+                        "Historical suite stopped at retained non-success; review before recovery."
+                    )
+                    return 1
                 continue
+            if args.suite == "v4":
+                definition = HISTORY[name]
+                source = PROJECT / ".tracemine-history/inputs" / name
+                frozen = json.loads((PROJECT / "scripts/historical_validation_v4.json").read_text())
+                validated = next(item for item in frozen if item["name"] == name)
+                if git(source, "rev-parse", "HEAD").strip() != definition["base_commit"]:
+                    raise SystemExit("Historical source revision changed")
+                with tempfile.TemporaryDirectory(prefix="tracemine-history-check-") as check:
+                    digest = snapshot(source, Path(check) / "copy")
+                evaluator = PROJECT / definition["evaluator"]
+                if (
+                    digest != validated["inputs"]["snapshot_digest"]
+                    or hashlib.sha256(evaluator.read_bytes()).hexdigest()
+                    != validated["evaluator_sha256"]
+                ):
+                    raise SystemExit("Frozen historical input or evaluator changed")
             run = runner.create(
                 RunRequest(
-                    repo=str(PROJECT / "examples" / name),
+                    repo=str(source if args.suite == "v4" else PROJECT / "examples" / name),
                     task=task,
-                    test_command=COMMAND,
+                    test_command=HISTORY[name]["test_command"] if args.suite == "v4" else COMMAND,
                     evaluator_path=(
-                        str(PROJECT / "evaluators/rate_limiter.py")
+                        str(PROJECT / HISTORY[name]["evaluator"])
+                        if args.suite == "v4"
+                        else str(PROJECT / "evaluators/rate_limiter.py")
                         if args.suite == "live"
                         else str(PROJECT / "evaluators/v3" / (name.replace("-", "_") + ".py"))
                         if args.suite == "v3"

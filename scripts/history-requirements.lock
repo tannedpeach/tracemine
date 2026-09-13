@@ -1,0 +1,5 @@
+# Additional test dependencies for the pinned historical source checkouts.
+simplejson==3.20.2
+PyYAML==6.0.2
+pytest-cov==6.1.1
+coverage==7.16.1

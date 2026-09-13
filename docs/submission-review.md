@@ -36,3 +36,9 @@ rejected as a coding failure. Snapshot-catalog did not start because of a Codex
 usage-limit process error. These outcomes improve evaluator independence and task
 analysis, but there is still no genuine coding failure with a defensible diagnosis
 and targeted recovery.
+
+September 13 continuation: snapshot-catalog's one unchanged authorized restart
+passed (run `e87d4c60f6ff4ec787191258225695d1`, six actions, normal agent and
+verification exits). Suite v3 is closed without a qualifying coding failure.
+Historical suite v4 is frozen after validating all three pre-fix baselines and
+both sides of each historical regression. The live evidence gate remains open.

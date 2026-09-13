@@ -9,7 +9,9 @@
 ## Implementation order
 - [x] Audit prior tasks, trajectories and verification independence in the experiment ledger.
 - [x] Freeze v3 with three independently verified state/ownership tasks before execution.
-- [x] Execute v3 once in order and manually review candidate outcomes; async-cache passed, durable-delivery was rejected as an evaluator mismatch, and snapshot-catalog stopped on a usage-limit process error.
+- [x] Close v3: async-cache passed, durable-delivery was rejected as an evaluator mismatch, and the one unchanged snapshot-catalog restart passed.
+- [x] Validate and freeze three real historical bugs with passing baselines, failing pre-fix evaluators and passing known fixes.
+- [ ] Run historical suite v4 once in fixed order; stop at the first genuine coding failure and review diagnosis before one recovery.
 - [x] Finalization: fixed three-candidate suite and resumable bounded harness; no model overrides or repeated prompts.
 - [x] Run fixed suite v1 once and record every outcome.
 - [x] Complete the one authorized restart of the interrupted rate-limiter candidate: 6 tests passed. Suite v1 is complete.

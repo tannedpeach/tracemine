@@ -1,5 +1,59 @@
 # Live experiment ledger
 
+## Current checkpoint: historical suite v4 frozen
+
+Suite v3 is closed. The one unchanged snapshot-catalog restart passed with baseline,
+agent and final exits all zero. Its original missing-method verification error was
+the expected result of unchanged code after an agent usage-limit error, not an
+evaluator defect. Neither run supplies a coding-failure example.
+
+Before any v4 model invocation, three historical candidates were validated in this
+fixed order. Task text, source/fix commits and exact baseline commands are in
+`scripts/historical_suite_v4.json`; evaluator hashes, source content digests and
+measured preflight outcomes are in `scripts/historical_validation_v4.json`.
+
+| Order | Historical evidence | Regression scope | Pre-fix baseline / evaluator | Fixed baseline / evaluator |
+|---|---|---|---|---|
+| 1 | [cachetools #405](https://github.com/tkem/cachetools/issues/405), [accepted fix](https://github.com/tkem/cachetools/commit/39b31bc9b63abe98497409945e9d382d8918c8fb) | Custom-size replacement, eviction and accounting across cache policies | 0 / 1 | 0 / 0 |
+| 2 | [TinyDB #591](https://github.com/msiemens/tinydb/issues/591), [accepted fix](https://github.com/msiemens/tinydb/commit/76d21d26c682e1ca6ca25bd8e81edf9f609ac52f) | Missing/mixed document IDs, callback updates, query cache and upsert | 0 / 1 | 0 / 0 |
+| 3 | [Marshmallow #2170](https://github.com/marshmallow-code/marshmallow/issues/2170), [accepted fix](https://github.com/marshmallow-code/marshmallow/commit/9f751e1cef943e2ca1a77f93d3483b4a171d4303) | Aliased schema error merging, many, excluded fields and literal dictionaries | 0 / 1 | 0 / 0 |
+
+All preflight processes exited normally. Cachetools and Marshmallow use the named
+affected upstream test modules, not the entire upstream test matrix. TinyDB uses
+its full tests directory. The first preflight stopped because TinyDB's pytest
+configuration required the missing coverage plugin; dependencies were installed
+and pinned before repeating preflight. This is setup evidence, not an agent result.
+All attempts remain in ignored `.tracemine-history/preflight-*` directories.
+
+Manual task/evaluator review: every asserted behavior is in the frozen task.
+TinyDB promises skipping absent IDs, not rollback of arbitrary callback exceptions.
+Marshmallow's accepted fix preserves literal error dictionaries, so the task says
+that explicitly. Cachetools includes replacement-key eviction and size accounting;
+the public report credits AI-assisted discovery. These are accepted real historical
+bugs, not claims about who first found them.
+
+To reproduce preflight after normal setup:
+
+```bash
+source .venv/bin/activate
+python -m pip install -r scripts/history-requirements.lock
+python scripts/prepare_history.py
+```
+
+Original upstream checkouts remain unchanged and ignored. Tests run in disposable
+copies. Agent copies contain pre-fix files and fresh Git metadata, without upstream
+history, fixes, issue links or evaluator files in the task workspace. The existing
+local trust boundary still allows reads outside that workspace; review trajectories
+for upstream or evaluator access before accepting evidence.
+
+Protocol: `python scripts/find_demo_failure.py --suite v4` uses the normal runner
+and settings, once per candidate, in frozen order. Stop at the first potential
+coding failure for manual review. Supplied tests precede evaluator checks in retained
+final logs; a supplied-test failure prevents evaluator execution. Record both
+outcomes separately after inspecting those logs. Only a grounded normal diagnosis
+warrants one `--suite v4 --recover RUN_ID` attempt from the retained input. Stop
+after this fixed suite even if every candidate passes. No v5 or tuned retries.
+
 These are actual Codex invocations. Unit-test doubles are not experiments. All raw originals are retained in ignored local storage. Model results vary between runs.
 
 | Experiment | Agent exit | Final test exit | Actions | Agent duration | Outcome |
@@ -340,3 +394,15 @@ The v3 attempt index and raw logs retain all three outcomes. The account limit i
 an execution constraint, not a measured task result. The suite remains frozen; a
 future run may resume only under the explicitly documented one-attempt policy after
 reviewing whether an authorized process restart is appropriate.
+
+## snapshot-catalog: 2026-09-13T20:03:40.940828+00:00
+
+<!-- run:e87d4c60f6ff4ec787191258225695d1 -->
+- Run: `e87d4c60f6ff4ec787191258225695d1`; fixture: `examples/snapshot-catalog`
+- Task: Add Catalog.page(limit=20, cursor=None) returning {"items": [...], "next_cursor": opaque string or None}, and Service.page_items with the same parameters delegating to it. A new traversal snapshots the current rows sorted by (created_at,id). Every later page in that traversal must retain the original membership, full payload values and ordering even after put, delete or sort-key changes; new traversals see current state. Limit may change between pages and must be a non-bool integer 1 through 100. Replaying the same cursor and limit must return the same entire response, including next_cursor. Returned mutable values must not alias stored snapshots or current records. Cursors are scoped to their Catalog instance; reject foreign, empty or malformed cursors with ValueError. Empty and last pages have next_cursor=None. Keep existing list, put, delete and Service.list_items behavior. Retaining snapshots for the Catalog lifetime is acceptable for this local tool; no expiry or disk persistence needed. Add deterministic mutation/traversal tests and run the supplied suite.
+- Test command: `python3 -m pytest -q`
+- Agent exit: 0; final test exit: 0
+- Actions: 6; agent duration: 110279 ms
+- Classification: **success**
+- Parent: none
+- Authorized process restart of: `2391b8ee037d4d60bae946fd48f9961b`; no diagnostic hint added.
