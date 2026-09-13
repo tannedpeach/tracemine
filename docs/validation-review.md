@@ -1,4 +1,4 @@
-# Cursor submission review
+# Validation review
 
 Latest audit: September 13, 2026. TraceMine presents a complete local workflow for
 capturing Codex trajectories, inspecting repository changes, independently verifying

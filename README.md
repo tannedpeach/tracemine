@@ -116,7 +116,7 @@ Local data lives in `.tracemine/` (ignored by Git), or `TRACEMINE_DATA`. It incl
 
 `./scripts/check.sh` runs backend lint/format checks, Python type checking, isolation/lifecycle/API tests, frontend formatting, strict TypeScript compilation, and the production build. Test doubles are explicitly labeled and never exported as real run evidence. CI runs the same checks on macOS.
 
-See [experiment ledger](docs/experiments.md) for actual live results and [submission review](docs/submission-review.md) for the final portfolio audit.
+See [experiment ledger](docs/experiments.md) for actual live results and [validation review](docs/validation-review.md) for the final project audit.
 
 The fixed evaluation produced no genuine coding failure, so there is not yet a live
 failure-to-diagnosis-to-recovery recording. That limitation is documented in the
