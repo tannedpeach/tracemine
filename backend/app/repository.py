@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+import shlex
 import shutil
 import stat
 import subprocess
@@ -199,5 +200,5 @@ async def run_tests(
     args, env = sandbox_command(repo, command)
     if evaluator is not None:
         env["TRACEMINE_EVALUATOR"] = str(evaluator.resolve())
-        args[-1] = f'{command} && python3 "$TRACEMINE_EVALUATOR" "$PWD"'
+        args[-1] = f'/bin/sh -c {shlex.quote(command)} && python3 "$TRACEMINE_EVALUATOR" "$PWD"'
     return await execute(args, repo, logs, name, timeout, env=env)

@@ -358,3 +358,28 @@ def test_store_closes_connections(tmp_path):
         assert connection.execute("select 1").fetchone()[0] == 1
     with pytest.raises(sqlite3.ProgrammingError, match="closed"):
         connection.execute("select 1")
+
+
+async def test_retained_evaluator_survives_source_change_and_shell_exit(source, tmp_path):
+    from pathlib import Path
+
+    evaluator = tmp_path / "grader.py"
+    evaluator.write_text(
+        "import sys\nfrom pathlib import Path\n"
+        "sys.path.insert(0, str(Path(sys.argv[1])))\n"
+        "from app import VALUE\nassert VALUE == 1\n"
+    )
+    runner = Runner(Store(tmp_path / "data"), FakeAgent(), FakeDiagnoser())
+    request = RunRequest(
+        repo=str(source), task="change", test_command="exit 0", evaluator_path=str(evaluator)
+    )
+    parent = runner.create(request)
+    await runner.run(parent)
+    assert parent.status == "failed" and parent.final_test.exit_code == 1
+    retained = Path(parent.evaluator_path).read_bytes()
+    evaluator.write_text("raise AssertionError('changed original grader')\n")
+    recovery = runner.create(request, parent)
+    await runner.run(recovery)
+    assert recovery.status == "succeeded"
+    assert Path(recovery.evaluator_path).read_bytes() == retained
+    assert recovery.snapshot_digest == parent.snapshot_digest

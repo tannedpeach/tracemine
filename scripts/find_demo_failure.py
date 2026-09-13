@@ -19,6 +19,7 @@ from app.store import Store
 PROJECT = Path(__file__).resolve().parents[1]
 COMMAND = "python3 -m pytest -q"
 CANDIDATES_V2 = tuple(json.loads((PROJECT / "scripts/candidate_suite_v2.json").read_text()))
+CANDIDATES_V3 = tuple(json.loads((PROJECT / "scripts/candidate_suite_v3.json").read_text()))
 CANDIDATES_LIVE = (
     (
         "rate-limiter-live",
@@ -124,7 +125,7 @@ async def main() -> int:
     parser.add_argument("--data", type=Path, default=PROJECT / ".tracemine-candidates")
     parser.add_argument("--ledger", type=Path, default=PROJECT / "docs/experiments.md")
     parser.add_argument("--recover", help="One manually reviewed parent run ID")
-    parser.add_argument("--suite", choices=("v1", "v2", "live"), default="v1")
+    parser.add_argument("--suite", choices=("v1", "v2", "v3", "live"), default="v1")
     parser.add_argument(
         "--resume-process-error", help="One explicitly authorized process-error restart"
     )
@@ -134,6 +135,7 @@ async def main() -> int:
     selected_candidates = {
         "v1": CANDIDATES,
         "v2": CANDIDATES_V2,
+        "v3": CANDIDATES_V3,
         "live": CANDIDATES_LIVE,
     }[args.suite]
     index = store.root / f"candidate-suite-{args.suite}.json"
@@ -190,6 +192,8 @@ async def main() -> int:
                     evaluator_path=(
                         str(PROJECT / "evaluators/rate_limiter.py")
                         if args.suite == "live"
+                        else str(PROJECT / "evaluators/v3" / (name.replace("-", "_") + ".py"))
+                        if args.suite == "v3"
                         else None
                     ),
                 ),

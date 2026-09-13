@@ -1,6 +1,7 @@
 """The MVP state machine. A retry always branches from the retained input snapshot."""
 
 import asyncio
+import hashlib
 import shlex
 import time
 import uuid
@@ -94,6 +95,19 @@ class Runner:
         directory = self.store.run_dir(run.id)
         logs = directory / "logs"
         logs.mkdir(parents=True, exist_ok=True)
+        evaluator_digest = None
+        if run.evaluator_path:
+            evaluator_source = Path(run.evaluator_path)
+            evaluator_bytes = evaluator_source.read_bytes()
+            evaluator_digest = hashlib.sha256(evaluator_bytes).hexdigest()
+            if run.parent_run_id:
+                expected = (evaluator_source.parent / "evaluator.sha256").read_text().strip()
+                if evaluator_digest != expected:
+                    raise ValueError("Retained evaluator changed; refusing recovery")
+            retained_evaluator = logs / "evaluator.py"
+            retained_evaluator.write_bytes(evaluator_bytes)
+            (logs / "evaluator.sha256").write_text(evaluator_digest + "\n")
+            run.evaluator_path = str(retained_evaluator)
         saved = self.store.root / "snapshots" / run.snapshot_id
         self.state(run, "preparing")
         if not run.parent_run_id:
@@ -176,6 +190,10 @@ class Runner:
         # Final verification also uses a separate copy, preserving the exact agent output.
         final_repo = directory / "verification"
         await asyncio.to_thread(snapshot, repo, final_repo, False)
+        if run.evaluator_path:
+            actual = hashlib.sha256(Path(run.evaluator_path).read_bytes()).hexdigest()
+            if actual != evaluator_digest:
+                raise ValueError("Retained evaluator changed during execution")
         run.final_test = await run_tests(
             final_repo,
             run.test_command,

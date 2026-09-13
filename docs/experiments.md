@@ -184,3 +184,91 @@ of the unchanged agent output passed five tests and the corrected evaluator
 A regression test checks the evaluator against a labeled test-only sliding-window
 reference and the original fixed-window implementation. No live failure/recovery
 evidence has been established.
+
+## Candidate audit and next fixed suite (September 13, 2026)
+
+The older request's v1 status is superseded by the retained ledger: v1 and v2
+have completed, and the evaluator limiter has consumed its authorized restart.
+None will be rerun. The next suite is v3, preserving the meaning of earlier results.
+
+### What the actual candidates measure
+
+Line counts below include blank lines in the initial Python files, before Codex.
+Each named v1/v2 candidate has just one production file and one test file.
+Difficulty is a qualitative assessment of the observed task, not a model benchmark.
+
+| Candidate | Production / test lines | Difficulty and interaction | Verification and visible trajectory |
+|---|---:|---|---|
+| v1 cursor pagination | 16 / 29 | Low to moderate: immutable list, compound ordering and input validation. Requirements explicitly enumerate boundaries; no data mutation or concurrency. | Three original tests only cover old listing. Agent writes new pagination tests and passes 52. Event e00008 describes the eventual design before e00010 edits. No observed failed coding test; e00007 exit 1 is an empty AGENTS search. |
+| v1 idempotent orders | 28 / 24 | Low to moderate: normalize, validate, memoize. No persistence, crashes or cross-process coordination required. | Original eight cases cover old behavior; new key requirements depend on agent-authored tests. e00009 implements locking and replay, e00015 passes 21. No observed corrected coding failure. |
+| v1 rate limiter | 19 / 24 | Low: a deque of at most three timestamps; every boundary and pruning rule is stated. | Three initial tests do not distinguish rolling from fixed windows. Restart e00012 exits 5 with no tests collected, e00014 edits files, e00016 passes six. This is an in-run editing/collection issue, not a failed final implementation. |
+| v2 transactional cache | 51 / 98 | Moderate: rollback plus versions, mutable isolation and callback cache fills. A correct deepcopy reference makes the contract directly inspectable. | Sixteen supplied cases already expose late rollback and cold-cache fill. e00008 explicitly identifies journaling reads before e00012 implements it. Added tests include nested transactions and copy failures; 28 pass without an observed failed coding assertion. |
+| v2 lease queue | 61 / 84 | Moderate: indexes, fencing, expiry priority, persistence and stale entries. All state fits in a single mapping. | Fifteen initial cases include 12 seeded scan-oracle cases. e00010 identifies ready-time versus expiry-time ordering before e00012 edits. Nineteen pass, including an agent-added no-scan check. No observed failed coding assertion. |
+| v2 document transactions | 42 / 70 | Low to moderate: remove then insert, path overlap, caller isolation. Existing whole-tree deepcopy already solves atomic rollback. | Eight baseline cases cover old operations, not new moves. e00009 edits before e00010 describes post-removal lookup. New move tests are agent-authored; 29 pass without an observed failed coding assertion. |
+| evaluator rate limiter | 19 / 15 | Low: essentially the same standard limiter operation, not a materially harder task. | Five supplied tests pass; the external assertion contradicts the task. Diagnosis abstains and corrected verification passes. This is evidence of a verifier defect, not an agent failure. |
+
+For every v1/v2 task the agent could inspect and edit all tests later determining
+success. Tests expose baseline behavior directly, and prompts provide detailed
+implementation checklists. They are useful regressions, especially the queue's
+scan oracle, but agent-authored tests cannot independently establish the new
+requirements. None of these fixtures contains a large integration surface. The
+v2 interactions require reasoning, but the agent visibly anticipated their main
+invariants. The evidence supports the bounded-task explanation; it does not show
+that coding agents generally do not fail or that these implementations are complete.
+
+Earlier exploratory tasks show the same pattern: TTL caching (26 production
+lines), SQLite/cache coherence (47), query spans (24 across two modules), GitHub
+import (26), and interval scheduling (22). Query spans and scheduling have visible
+independent oracles for existing semantics; new requirements still partly rely on
+agent-added tests. The scheduler explicitly reasons about zero-weight lexicographic
+prefixes before editing. The cache and SQLite trajectories include dependency or
+sandbox/tool setup problems, not normal final coding failures. These issues remain
+in raw logs and are not counted as recovered implementation mistakes.
+
+Success currently means agent exit 0 and supplied command exit 0. Important gaps:
+mutable tests can omit requirements; a test count is not coverage; performance
+claims may lack independent checks; a nonzero command may be a collection or
+process error; and even evaluator-owned assertions can be wrong. Per-edit diffs
+and internal reasoning are not always emitted, so absence of a visible wrong turn
+is not proof that no wrong turn occurred. No retrospective test was added to turn
+a prior passing candidate into a failure.
+
+### Suite v3: frozen definitions and evaluator strategy
+
+Exact prompts: `scripts/candidate_suite_v3.json`. Fixed execution order:
+
+1. **async-cache**: coalesce concurrent metadata loads while preserving cancellation
+   ownership, generation invalidation, completion-based TTL and mutable isolation.
+   The existing two-module service has healthy sequential behavior. Controlled
+   futures drive deterministic overlapping calls; no real network or timed sleeps.
+2. **durable-delivery**: bound retries while preserving ordered durable acknowledgements
+   and stable receiver idempotency keys across ambiguous send outcomes and restarts.
+   The worker and atomic state-file adapter have healthy successful-delivery behavior.
+   An evaluator-owned fake transport performs an effect before raising, and a fake
+   durable store rejects acknowledgement writes. Assertions distinguish these errors.
+3. **snapshot-catalog**: add repeatable pagination across inserts, deletes, sort-key
+   changes and payload updates while retaining current-state reads. The catalog and
+   service adapter have passing listing behavior. The oracle is a detached list taken
+   before mutation; traversal is compared with it, including complete cursor replay.
+
+These are realistic ownership and state-boundary problems; all required behavior
+is specified in the prompt. Evaluator cases are not copied into the agent repository
+or supplied as hints. Normal tests remain visible, and agents can add tests. Each
+external evaluator is validated against a labeled test-only reference implementation
+and rejects the unchanged baseline's missing feature. References are not trajectories,
+solutions given to the coding agent, or recovery evidence. This does not prove the
+verifier infallible: every candidate failure still requires manual review.
+
+The runner retains evaluator bytes and their SHA-256 before coding, outside the
+working copy, and checks the bytes before final verification. Recovery uses that
+same retained evaluator and original input. This is procedural separation for trusted
+local experiments, not a read-isolation security boundary: the CLI sandbox allows
+filesystem reads. Trajectories must be inspected for evaluator access before an
+example is accepted. Evaluator files are not exposed in the task or agent verifier.
+
+Run `python scripts/find_demo_failure.py --suite v3` in the activated environment.
+One attempt per candidate, fixed order, stop at a potential coding failure or process
+error. Never reset its attempt index. Review the trajectory, diff, evaluator and
+normal termination before `--suite v3 --recover RUN_ID`. One short diagnosis-derived
+hint is allowed only for a defensible diagnosis. If all pass, report the suite's
+coverage and limitations and design a subsequent suite based on this evidence.

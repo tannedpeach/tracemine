@@ -7,6 +7,9 @@
 - [x] Prove real JSONL capture on a disposable Git repository.
 
 ## Implementation order
+- [x] Audit prior tasks, trajectories and verification independence in the experiment ledger.
+- [x] Freeze v3 with three independently verified state/ownership tasks before execution.
+- [ ] Execute v3 once in order and manually review any candidate failure.
 - [x] Finalization: fixed three-candidate suite and resumable bounded harness; no model overrides or repeated prompts.
 - [x] Run fixed suite v1 once and record every outcome.
 - [x] Complete the one authorized restart of the interrupted rate-limiter candidate: 6 tests passed. Suite v1 is complete.
