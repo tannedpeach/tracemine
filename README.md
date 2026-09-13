@@ -12,7 +12,7 @@ repo + task → Codex trajectory → failing tests → likely earlier mistake
                        compare outcomes ← fresh retry + targeted hint
 ```
 
-> Build status: the complete workflow is implemented and being validated. A genuine failed-run/recovery recording is still required before calling this portfolio-ready. No synthetic trajectory is presented as a real experiment.
+> Build status: the complete workflow is implemented and being validated. A genuine failed-run/recovery recording is still required before calling this portfolio-ready. No synthetic trajectory is presented as a real experiment. The latest live attempt passed its supplied tests; manual review traced its verification failure to an evaluator defect, and the corrected evaluator passed the unchanged output.
 
 ![Recorded real run: trajectory, tests, diff and audit trail](docs/media/recorded-run.gif)
 

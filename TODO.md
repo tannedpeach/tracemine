@@ -13,7 +13,8 @@
 - [x] Freeze suite v2 with three new tasks and passing isolated baselines before any live invocation.
 - [x] Execute suite v2 once and preserve all outcomes: all three candidates passed; no genuine coding failure appeared.
 - [x] Freeze immutable-evaluator candidate and preserve its first process error.
-- [ ] Resume evaluator candidate once when Codex usage is available.
+- [x] Resume evaluator candidate once: normal agent completion; supplied tests passed. Manual review found an evaluator defect, not a coding failure.
+- [x] Correct the evaluator boundary assertion and verify the retained output without rerunning Codex; all checks passed.
 - [ ] Manually review a genuine candidate failure when one occurs.
 - [x] Repository snapshot, baseline tests, adapter, persistence, final tests/diff.
 - [x] API and React form, saved runs, trajectory inspection.

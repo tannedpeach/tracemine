@@ -52,3 +52,25 @@ def test_ledger_is_idempotent_and_contains_no_source_path(tmp_path):
     text = ledger.read_text()
     assert text.count("<!-- run:test-only -->") == 1
     assert str(tmp_path) not in text
+
+
+async def test_evaluator_accepts_sliding_window_and_rejects_fixed_window(tmp_path):
+    """Test-only reference implementation validates the evaluator's boundary contract."""
+    repo = tmp_path / "repo"
+    snapshot(PROJECT / "examples/rate-limiter-live", repo)
+    evaluator = PROJECT / "evaluators/rate_limiter.py"
+    fixed = await run_tests(repo, "true", tmp_path / "logs", "fixed", 30, evaluator)
+    assert fixed.exit_code == 1
+    (repo / "limiter.py").write_text(
+        "class RateLimiter:\n"
+        "    def __init__(self, clock):\n"
+        "        self.clock, self.history = clock, {}\n"
+        "    def allow(self, client):\n"
+        "        now = self.clock()\n"
+        "        active = [t for t in self.history.get(client, []) if t > now - 10]\n"
+        "        accepted = len(active) < 3\n"
+        "        self.history[client] = active + ([now] if accepted else [])\n"
+        "        return accepted\n"
+    )
+    sliding = await run_tests(repo, "true", tmp_path / "logs", "sliding", 30, evaluator)
+    assert sliding.exit_code == 0, (tmp_path / "logs/sliding.stderr").read_text()

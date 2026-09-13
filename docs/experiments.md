@@ -61,8 +61,8 @@ manufactured or relabeled.
 
 The first evaluator-backed attempt (`51e97d...`) stopped before Codex launched:
 the account returned an explicit usage-limit error after 2.612 seconds. It is
-retained as an agent process error. The final test was not run, and it is not a
-coding failure. The one-time resume command is:
+retained as an agent process error. Final verification returned exit 1 after the agent process error; this is not a
+coding failure. The one-time resume command, now consumed, was:
 
 ```bash
 source .venv/bin/activate
@@ -150,3 +150,37 @@ evaluator from `evaluators/rate_limiter.py` only after the visible tests pass.
 - Actions: 0; agent duration: 2612 ms
 - Classification: **agent process error**
 - Parent: none
+
+## rate-limiter-live: 2026-09-13T05:31:19.490714+00:00
+
+<!-- run:695aa2d98f0941dc8146dc922953bf81 -->
+- Run: `695aa2d98f0941dc8146dc922953bf81`; fixture: `examples/rate-limiter-live`
+- Task: Implement a per-client sliding-window rate limiter allowing 3 accepted requests in any 10-second window. Keep the injectable clock and allow(client) API. The fourth request inside the window is rejected. A request exactly 10 seconds after the oldest accepted request is allowed, while requests at the other timestamps remain inside the rolling window. Rejected requests do not extend the window. Clients are isolated and expired timestamps are pruned. Add deterministic tests for staggered timestamps, exact boundaries, rejected requests and isolation. Run the full supplied test suite.
+- Test command: `python3 -m pytest -q`
+- Agent exit: 0; final test exit: 1
+- Actions: 5; agent duration: 51433 ms
+- Classification: **coding failure candidate; manual review required**
+- Parent: none
+- Authorized process restart of: `51e97d32ff95470abee566ccd4fd8d89`; no diagnostic hint added.
+
+## Manual review of evaluator restart (September 13, 2026)
+
+Run `695aa2d98f0941dc8146dc922953bf81` completed normally: baseline exit 0,
+agent exit 0, five actions, 51.433 seconds, and five supplied tests passed.
+Final verification exited 1 because the evaluator incorrectly required rejection
+at time 10 after accepted requests at 0, 1 and 2. The task explicitly expires the
+request at 0 at this boundary, leaving room for one accepted request.
+
+**Reviewed classification: evaluator defect, not a coding failure.** The automatic
+candidate label above is preliminary. Diagnosis returned `insufficient_evidence`,
+selected no event, and noted that the implementation matched the task. No targeted
+recovery was run. The original result, diff, diagnosis and logs remain unchanged;
+the original evaluator is retained alongside the local run logs and in Git history.
+
+The corrected evaluator accepts the first request at 10 and rejects a second
+request at 10, retaining requests at 1, 2 and 10. Separate sandboxed verification
+of the unchanged agent output passed five tests and the corrected evaluator
+(exit 0, 250 ms). This was a verifier-only check, not a new agent attempt or recovery.
+A regression test checks the evaluator against a labeled test-only sliding-window
+reference and the original fixed-window implementation. No live failure/recovery
+evidence has been established.

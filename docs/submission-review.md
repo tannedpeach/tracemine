@@ -21,4 +21,11 @@ Finalization suite v1 added three fixed realistic candidates. Pagination and ide
 
 The submission gate remains intentionally open. Across v1 and v2, every normally completed candidate passed; the only non-pass was the documented usage-limit process error. There is still no valid live failure to diagnose or recover.
 
-An immutable-evaluator candidate is prepared and its first attempt is retained. Codex hit the account usage limit before launch, so it produced no coding result. One resume is permitted after the account resets; evaluator failure will be reviewed before any recovery attempt.
+An immutable-evaluator candidate is prepared and its first attempt is retained. Codex hit the account usage limit before launch, so it produced no coding result. The one permitted resume was completed on September 13; its manual review is recorded below.
+
+September 13 follow-up: the authorized evaluator restart completed normally and
+passed five supplied tests. Manual review rejected its apparent failure because
+the evaluator contradicted the exact-boundary requirement. Diagnosis conservatively
+returned insufficient evidence. The corrected evaluator passed against the retained
+agent output without another model invocation. No recovery was warranted; the
+submission evidence gate remains open.

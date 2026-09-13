@@ -26,8 +26,9 @@ assert limiter.allow("a")
 clock.now = 9.999
 assert not limiter.allow("a")
 clock.now = 10.0
-assert not limiter.allow("a"), "a sliding window must retain 1.0 and 2.0"
+assert limiter.allow("a"), "the request at 0.0 expires at 10.0"
+assert not limiter.allow("a"), "requests at 1.0, 2.0 and 10.0 fill the window"
 clock.now = 11.0
-assert limiter.allow("a"), "the oldest accepted request expires at 11.0"
+assert limiter.allow("a"), "the request at 1.0 expires at 11.0"
 assert limiter.allow("b")
 print("immutable rate-limiter evaluator passed")
