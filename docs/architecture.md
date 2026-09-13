@@ -54,3 +54,21 @@ Success means a normally completed agent and a final test exit code of zero. Age
 ## Choices deliberately omitted
 
 No vector store, plugin framework, live streaming transport, task scheduler, Kubernetes, multiple agents, or checkpoint restoration. The interface protocol makes the Codex process testable; it is not a provider marketplace. Polling, SQLite, Git, and local files are enough to explain and reproduce the end-to-end loop.
+
+## Evaluator-owned candidate verification
+
+Candidate suites can attach a standalone evaluator script. Before the agent runs,
+TraceMine copies its bytes into that run's log directory and records SHA-256. The
+agent's prepared test command does not include this script. Final verification runs
+the supplied tests, then the retained evaluator against the independent verification
+copy. An explicit shell exit in the supplied command cannot skip the evaluator.
+The evaluator checksum is checked before execution. Recovery copies the same
+retained evaluator after checking its recorded digest, along with the original
+repository snapshot; source evaluator edits do not change an existing experiment.
+
+This separation protects against accidental test edits, not hostile filesystem
+reads. Evaluators remain readable outside the working copy under the local trust
+model. A manual trajectory review checks for answer-key access and grader defects.
+The UI's raw test failure remains a measured exit status; the experiment ledger
+records whether manual review accepted it as an implementation failure. A diagnosis
+may abstain, as it did for the incorrect rate-limiter evaluator.

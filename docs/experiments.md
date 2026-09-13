@@ -272,3 +272,71 @@ error. Never reset its attempt index. Review the trajectory, diff, evaluator and
 normal termination before `--suite v3 --recover RUN_ID`. One short diagnosis-derived
 hint is allowed only for a defensible diagnosis. If all pass, report the suite's
 coverage and limitations and design a subsequent suite based on this evidence.
+
+## async-cache: 2026-09-13T06:04:38.489677+00:00
+
+<!-- run:4cd2710a429c4fc6b8da079417ddea4e -->
+- Run: `4cd2710a429c4fc6b8da079417ddea4e`; fixture: `examples/async-cache`
+- Task: Extend Cache.get to coalesce concurrent cache misses per key without serializing unrelated keys. Preserve the existing Cache and MetadataService APIs, detached mutable return values, exact TTL expiry and TTL measured from successful load completion. A caller cancellation must not cancel a load while other callers still await it. If the last waiter cancels, cancel and release that load so a later request can start normally. Loader failures propagate to all current waiters, are not cached, and permit later retries. invalidate(key) must immediately detach that key from its current flight: existing waiters may still receive the old result, but subsequent callers start a new load and an old completion must neither overwrite a newer cached value nor remove a newer flight. Use one asyncio event loop; no threads or external packages. Add deterministic tests using events/futures for overlap, cancellation and invalidation races, and run the supplied test suite.
+- Test command: `python3 -m pytest -q`
+- Agent exit: 0; final test exit: 0
+- Actions: 7; agent duration: 155376 ms
+- Classification: **success**
+- Parent: none
+
+## durable-delivery: 2026-09-13T06:07:14.541061+00:00
+
+<!-- run:8154b13fe51c49ad8608ab9431fde09d -->
+- Run: `8154b13fe51c49ad8608ab9431fde09d`; fixture: `examples/durable-delivery`
+- Task: Add bounded transient retries to Worker.drain(max_attempts=1). The positive integer max_attempts excludes bool, is validated even for an empty queue, and counts total send invocations per pending message in this drain call. Retry only TimeoutError and ConnectionError from send; exhaustion returns the count of messages durably acknowledged in this call and stops before later messages. A successful send must be durably acknowledged before advancing. Storage load/save failures and other transport errors propagate immediately; storage errors must not enter the send retry loop. A transport timeout may occur after the receiver already performed its side effect: retain the same str(message id) key and original payload on every retry, including after reconstructing Worker from the same storage. The receiver owns idempotency; do not claim exactly-once delivery locally. Keep the persisted format and enqueue API compatible. Every send receives an independent deep copy, because transports may mutate payloads even when raising. Re-read durable state on each drain so a failed acknowledgement is retried correctly on the next call. Preserve ordering, add tests for ambiguous success and acknowledgement failure, and run the supplied tests. Single synchronous worker only; no concurrent writers or real network needed.
+- Test command: `python3 -m pytest -q`
+- Agent exit: 0; final test exit: 1
+- Actions: 6; agent duration: 113154 ms
+- Classification: **coding failure candidate; manual review required**
+- Parent: none
+
+### Manual review: durable-delivery `8154b13fe51c49ad8608ab9431fde09d`
+
+**Rejected as a coding failure: evaluator overconstraint.** Baseline and agent
+exited normally, 17 supplied tests passed, and the independent evaluator completed
+its transport/acknowledgement checks before failing in argument validation. The
+frozen task requires rejection of bool/non-integer max_attempts but does not name
+an exception class. The evaluator catches only ValueError; the implementation
+raises TypeError for wrong types and ValueError for non-positive integers. That is
+a defensible contract interpretation, not a demonstrated incorrect implementation.
+
+The normal diagnosis returned insufficient_evidence and selected no event. Its
+explanation identifies the exception mismatch and the task's missing exception-class
+requirement. No recovery hint was used. No test, prompt, result or evaluator bytes
+were changed after this outcome. The passing reference test did not catch this
+specification mismatch: it validated one permissible implementation, not all valid
+implementations. The remaining snapshot-catalog candidate is still unattempted and
+will run once in the frozen order. This is a verification-design limitation, not
+failure-to-recovery portfolio evidence.
+
+## snapshot-catalog: 2026-09-13T06:10:17.969750+00:00
+
+<!-- run:2391b8ee037d4d60bae946fd48f9961b -->
+- Run: `2391b8ee037d4d60bae946fd48f9961b`; fixture: `examples/snapshot-catalog`
+- Task: Add Catalog.page(limit=20, cursor=None) returning {"items": [...], "next_cursor": opaque string or None}, and Service.page_items with the same parameters delegating to it. A new traversal snapshots the current rows sorted by (created_at,id). Every later page in that traversal must retain the original membership, full payload values and ordering even after put, delete or sort-key changes; new traversals see current state. Limit may change between pages and must be a non-bool integer 1 through 100. Replaying the same cursor and limit must return the same entire response, including next_cursor. Returned mutable values must not alias stored snapshots or current records. Cursors are scoped to their Catalog instance; reject foreign, empty or malformed cursors with ValueError. Empty and last pages have next_cursor=None. Keep existing list, put, delete and Service.list_items behavior. Retaining snapshots for the Catalog lifetime is acceptable for this local tool; no expiry or disk persistence needed. Add deterministic mutation/traversal tests and run the supplied suite.
+- Test command: `python3 -m pytest -q`
+- Agent exit: 1; final test exit: 1
+- Actions: 0; agent duration: 2204 ms
+- Classification: **agent process error**
+- Parent: none
+
+### Suite v3 execution outcomes
+
+The frozen suite began after evaluator references and healthy baselines passed.
+`async-cache` completed normally and passed six supplied tests plus its evaluator.
+`durable-delivery` completed normally and passed 17 supplied tests; manual review
+rejected the evaluator's TypeError-versus-ValueError assumption, and diagnosis
+returned insufficient evidence. No recovery was run.
+`snapshot-catalog` had a passing baseline, but Codex was rejected by the account
+usage limit before launch. It has no trajectory, diff or coding result. The suite
+stopped as required. No candidate was rerun.
+
+The v3 attempt index and raw logs retain all three outcomes. The account limit is
+an execution constraint, not a measured task result. The suite remains frozen; a
+future run may resume only under the explicitly documented one-attempt policy after
+reviewing whether an authorized process restart is appropriate.

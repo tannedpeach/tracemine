@@ -118,6 +118,8 @@ Local data lives in `.tracemine/` (ignored by Git), or `TRACEMINE_DATA`. It incl
 
 See [experiment ledger](docs/experiments.md) for actual live results and [submission review](docs/submission-review.md) for the final portfolio audit.
 
+Suite v3 analysis and execution outcomes are recorded in the ledger. It includes one evaluator-passing asynchronous cache task, one manually rejected exception-class mismatch, and one usage-limit process error. No coding failure or recovery is claimed.
+
 The [fixed candidate suite](examples/candidate-suite.md) evaluates three realistic
 tasks once each, records every result, and stops for manual review at the first
 candidate coding failure. It uses the real runner without model overrides or

@@ -29,3 +29,10 @@ the evaluator contradicted the exact-boundary requirement. Diagnosis conservativ
 returned insufficient evidence. The corrected evaluator passed against the retained
 agent output without another model invocation. No recovery was warranted; the
 submission evidence gate remains open.
+
+September 13 suite v3 review: async-cache passed its independent evaluator. Durable
+delivery exposed an evaluator exception-class assumption and was conservatively
+rejected as a coding failure. Snapshot-catalog did not start because of a Codex
+usage-limit process error. These outcomes improve evaluator independence and task
+analysis, but there is still no genuine coding failure with a defensible diagnosis
+and targeted recovery.
