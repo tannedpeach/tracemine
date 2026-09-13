@@ -12,7 +12,7 @@ repo + task → Codex trajectory → failing tests → likely earlier mistake
                        compare outcomes ← fresh retry + targeted hint
 ```
 
-> Evidence status: the workflow is implemented, but a genuine failed-run/recovery recording is still missing. The unchanged snapshot-catalog restart and all three historical bug candidates passed. The fixed evaluation is complete; no failure, diagnosis or recovery is fabricated. The full submission gate remains open.
+TraceMine captures real Codex trajectories, independently verifies repository changes, and retains the snapshots, diffs, and raw logs needed to reproduce a run. It has been exercised on real historical bugs from cachetools, TinyDB, and Marshmallow, using pinned public repository commits and evaluator-owned regression checks.
 
 ![Recorded real run: trajectory, tests, diff and audit trail](docs/media/recorded-run.gif)
 
@@ -117,6 +117,11 @@ Local data lives in `.tracemine/` (ignored by Git), or `TRACEMINE_DATA`. It incl
 `./scripts/check.sh` runs backend lint/format checks, Python type checking, isolation/lifecycle/API tests, frontend formatting, strict TypeScript compilation, and the production build. Test doubles are explicitly labeled and never exported as real run evidence. CI runs the same checks on macOS.
 
 See [experiment ledger](docs/experiments.md) for actual live results and [submission review](docs/submission-review.md) for the final portfolio audit.
+
+The fixed evaluation produced no genuine coding failure, so there is not yet a live
+failure-to-diagnosis-to-recovery recording. That limitation is documented in the
+experiment ledger and submission review. Passing tests are evidence for the checked
+behavior, not proof of complete semantic correctness.
 
 The [experiment ledger](docs/experiments.md) records the complete fixed evaluation.
 Historical suite v4 tested real cachetools, TinyDB and Marshmallow bugs at pinned

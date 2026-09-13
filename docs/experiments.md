@@ -106,7 +106,8 @@ its independent final test exit was 0. It remains an agent-process error, not a
 claimed success or coding failure. A later cache-coherence experiment starts from
 the actual successful cache implementation, with a prepared-environment verifier.
 
-A genuine failed final test followed by diagnosed recovery is still being sought. Do not infer a recovery result from the unit-test suite or the example diagram.
+The fixed evaluations below provide measured implementation evidence. They do not
+include a live failure-to-diagnosis-to-recovery example.
 
 ## Finalization suite v1 (fixed, one pass)
 
@@ -123,7 +124,8 @@ On September 12 the user authorized exactly one restart of the interrupted limit
 It passed 6 tests (agent exit 0, final exit 0, 7 actions, 151.277 seconds).
 The input digest and complete agent prompt match the interrupted attempt. This
 completes suite v1 with no genuine coding failure. The original process error and
-its raw logs remain retained. Suite v2 is fixed in docs/suite-v2.md before execution.
+its raw logs remain retained. The subsequent v2 suite was frozen in
+`docs/suite-v2.md` before execution.
 
 ## cursor-pagination: 2026-09-11T22:58:50.840597+00:00
 
@@ -138,9 +140,8 @@ its raw logs remain retained. Suite v2 is fixed in docs/suite-v2.md before execu
 
 Suite v2 ran once in its frozen order. Transactional cache passed 28 tests,
 lease queue passed 19 tests, and document transactions passed its full suite
-(7 actions, 142.930 seconds).
-No candidate met the criteria for diagnosis and recovery; no failure was
-manufactured or relabeled.
+(7 actions, 142.930 seconds). No candidate met the criteria for diagnosis and
+recovery.
 
 ## Immutable evaluator candidate
 
@@ -274,7 +275,7 @@ evidence has been established.
 
 The older request's v1 status is superseded by the retained ledger: v1 and v2
 have completed, and the evaluator limiter has consumed its authorized restart.
-None will be rerun. The next suite is v3, preserving the meaning of earlier results.
+None was rerun. The subsequent v3 suite preserved the meaning of earlier results.
 
 ### What the actual candidates measure
 

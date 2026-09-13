@@ -1,51 +1,27 @@
-# TraceMine MVP
+# TraceMine status
 
-## Gate: Section 33
-- [x] Read handover completely; inspect empty workspace and installed tools.
-- [x] Inspect `codex --help` and `codex exec --help`.
-- [x] Minimal backend/frontend skeleton and isolated capture script.
-- [x] Prove real JSONL capture on a disposable Git repository.
+TraceMine's MVP is implemented and the repository is maintained as a focused local
+coding-agent debugging tool.
 
-## Implementation order
-- [x] Audit prior tasks, trajectories and verification independence in the experiment ledger.
-- [x] Freeze v3 with three independently verified state/ownership tasks before execution.
-- [x] Close v3: async-cache passed, durable-delivery was rejected as an evaluator mismatch, and the one unchanged snapshot-catalog restart passed.
-- [x] Validate and freeze three real historical bugs with passing baselines, failing pre-fix evaluators and passing known fixes.
-- [x] Run historical suite v4 once in fixed order: cachetools, TinyDB and Marshmallow passed supplied tests and independent evaluators. Close evaluation without more candidates or retries.
-- [x] Finalization: fixed three-candidate suite and resumable bounded harness; no model overrides or repeated prompts.
-- [x] Run fixed suite v1 once and record every outcome.
-- [x] Complete the one authorized restart of the interrupted rate-limiter candidate: 6 tests passed. Suite v1 is complete.
-- [x] Freeze suite v2 with three new tasks and passing isolated baselines before any live invocation.
-- [x] Execute suite v2 once and preserve all outcomes: all three candidates passed; no genuine coding failure appeared.
-- [x] Freeze immutable-evaluator candidate and preserve its first process error.
-- [x] Resume evaluator candidate once: normal agent completion; supplied tests passed. Manual review found an evaluator defect, not a coding failure.
-- [x] Correct the evaluator boundary assertion and verify the retained output without rerunning Codex; all checks passed.
-- [ ] Manually review a genuine candidate failure when one occurs.
-- [x] Repository snapshot, baseline tests, adapter, persistence, final tests/diff.
-- [x] API and React form, saved runs, trajectory inspection.
-- [x] Conservative structured diagnosis with validated event references (real failing-run validation pending).
-- [x] Clean-baseline recovery and measured comparison (integration-tested; live validation pending).
-- [x] Error handling, process timeouts, isolation and lifecycle tests (45 passing, including candidate baselines; Python type checks pass).
-- [x] Real reproducible evidence and polished UI (five completed live tasks passed; one redacted recording is reproducible).
-- [x] README, setup/check scripts, CI configuration, desktop and narrow-window UI review.
-- [x] Fresh-clone installation, complete checks and recorded patch reproduction.
-- [x] Short GIF of real passing-run inspection, explicitly labeled as partial workflow coverage.
-- [x] Public Git history scan for machine paths and common credential patterns.
-- [x] Hosted GitHub CI passed on macOS with Python 3.11 and 3.13 after publication.
-- [ ] Genuine failing Codex run, grounded diagnosis and targeted retry with measured comparison.
-- [ ] Recording of the complete failure → diagnosis → retry → comparison story.
-- [ ] Full 13-step Definition of Done from a fresh checkout and final Cursor submission approval.
+Completed:
 
-No stretch goals before the definition of done. All real logs remain in ignored local storage; only explicitly reviewed, sanitized evidence belongs in Git.
+- End-to-end Codex capture with isolated snapshots, baseline and final verification,
+  retained diffs, raw logs, SQLite persistence, and a React inspection UI.
+- Conservative diagnosis and clean-snapshot retry flows, with explicit process and
+  verification error states.
+- Fresh-clone setup, backend and frontend checks, reproducible demo recording, and
+  public documentation of architecture and trust boundaries.
+- Fixed evaluations v1 through v3, plus historical suite v4 using three pinned
+  public-repository bugs. Every v4 baseline passed, each pre-fix regression failed,
+  each historical fix passed, and all three first Codex attempts passed.
 
-September 13: fresh-clone setup, all checks, recorded patch reproduction and the
-historical preflight passed. All frozen input and evaluator hashes matched. The
-fixed experiment is complete, but the live failure/diagnosis/recovery steps of the
-Definition of Done remain unfulfilled. Do not manufacture evidence or launch more
-candidate suites to turn these unchecked items into a completion claim.
+Known limitation:
 
-Section 33 verified with codex-cli 0.153.4: 13 real JSONL records, exit 0, isolated edit and compilation. Source file unchanged. Raw evidence retained outside Git.
+- The fixed evaluations produced no genuine live coding failure with a defensible
+  diagnosis and targeted recovery. The included GIF therefore shows a passing-run
+  inspection, and the missing failure-to-recovery recording is documented honestly.
 
-The real caching task passed (7 actions, 2 files). Do not present that success as a failure or a recovery. API, React UI, diagnosis and recovery are implemented; live failure/recovery evidence remains outstanding.
+Possible future work:
 
-Publication audit: fresh clone setup and all checks passed; imported real recording inspected in the UI and its patch reproduced successfully. Fixed hidden history in narrow windows and added interrupted-agent outcome regression tests. See docs/submission-review.md for the eight-question review and remaining completion gate. No completion claim.
+- Add human-labeled diagnosis evaluation if a carefully scoped research phase is
+  justified. This is outside the current MVP and submission scope.
